@@ -191,7 +191,7 @@ class HistoryHelper extends Rails\ActionView\Helper
 
         if (empty($options['show_name']) && $history->group_by_table == 'tags') {
             $tag = $history->history_changes[0]->obj();
-            $html .= $this->tag_link($tag->name);
+            $html .= $this->tag_link($this->h($tag->name));
             $html .= ': ';
         }
 
