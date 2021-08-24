@@ -43,7 +43,7 @@
         <td align="right"><?= $tag->post_count ?></td>
         <td class="tag-type-<?= $tag->type_name ?>">
           <?= $this->linkTo('?', array('controller' => 'wiki', 'action' => 'show', 'title' => $tag->name)) ?>
-          <?= $this->linkTo($tag->name, array('controller' => 'post', 'action' => 'index', 'tags' => $tag->name)) ?>
+          <?= $this->linkTo($this->h($tag->name), array('controller' => 'post', 'action' => 'index', 'tags' => $tag->name)) ?>
         </td>
         <td><?= $tag->type_name . ($tag->is_ambiguous ? ", ambiguous" : "") ?></td>
         <td width="<?= $this->can_delete_tags ? '80' : '60' ?>px">
