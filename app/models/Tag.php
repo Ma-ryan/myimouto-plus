@@ -146,6 +146,9 @@ class Tag extends Rails\ActiveRecord\Base
         if (preg_match('/^(.+?)\.\.(.+)/', $range, $m))
             return array('between', self::parse_cast($m[1], $type), self::parse_cast($m[2], $type));
 
+        elseif (preg_match('/^=(.+)|^\.\.(.+)/', $range, $m))
+            return array('eq', self::parse_cast($m[1], $type));
+
         elseif (preg_match('/^<=(.+)|^\.\.(.+)/', $range, $m))
             return array('lte', self::parse_cast($m[1], $type));
 
