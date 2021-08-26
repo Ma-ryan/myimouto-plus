@@ -129,8 +129,16 @@ class TagImplication extends Rails\ActiveRecord\Base
 
     protected function prepare_create()
     {
-        $this->predtag = Tag::find_or_create_by_name($this->predicate);
-        $this->constag = Tag::find_or_create_by_name($this->consequent);
+        if (!($this->predtag = Tag::find_or_create_by_name($this->predicate))) {
+            $this->errors()->addToBase("Failed to create tag {$this->predicate}");
+            return false;
+        }
+
+        if (!($this->constag = Tag::find_or_create_by_name($this->consequent))) {
+            $this->errors()->addToBase("Failed to create tag {$this->consequent}");
+            return false;
+        }
+
         $this->predicate_id = $this->predtag->id;
         $this->consequent_id = $this->constag->id;
     }
