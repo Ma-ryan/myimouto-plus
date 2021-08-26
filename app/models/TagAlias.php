@@ -6,16 +6,17 @@ class TagAlias extends Rails\ActiveRecord\Base
         return 'tag_aliases';
     }
     
-    protected $alias_name;
+    private $alias_name = null; // input aliased tag name
+    private $tag = null;        // memoized tag
+    private $alias_tag = null;  // memoized alias tag
     
     protected function callbacks()
     {
         return array(
             'before_create' => array(
-                'normalize',
+                'validate_input',
+                'prepare_create',
                 'validate_uniqueness',
-                'validate_tag',
-                'validate_alias'
             ),
             'after_destroy' => [
                 'expire_tag_cache_after_deletion'
@@ -43,69 +44,85 @@ class TagAlias extends Rails\ActiveRecord\Base
         return $tag ? $tag->name : $tag_name;
     }
     
-    # Strips out any illegal characters and makes sure the name is lowercase.
-    public function normalize()
+    protected function validate_input()
     {
-        $this->name = trim(str_replace(' ', '_', strtolower($this->name)), '-~');
+        if (!($this->name = Tag::validate_tag_name($this->name))) {
+            $this->errors()->add('name', 'invalid or empty');
+            return false;
+        }
+
+        if (!($this->alias_name = Tag::validate_tag_name($this->alias_name))) {
+            $this->errors()->add('alias', 'invalid or empty');
+            return false;
+        }
+    }
+
+
+    protected function prepare_create()
+    {
+        if (!($this->tag = Tag::find_or_create_by_name($this->name))) {
+            $this->errors()->addToBase("Failed to create tag {$this->name}");
+            return false;
+        }
+
+        if (!($this->alias_tag = Tag::find_or_create_by_name($this->alias_name)))
+        {
+            $this->errors()->addToBase("Failed to create tag {$this->alias_name}");
+            return false;
+        }
+
+        if ($this->tag->tag_type != $this->alias_tag->tag_type) {
+            $this->tag->updateAttribute('tag_type', $this->alias_tag->tag_type);
+        }
+
+        $this->alias_id = $this->alias_tag->id;
     }
 
     # Makes sure the alias does not conflict with any other aliases.
     public function validate_uniqueness()
     {
-        if (self::where("name = ?", $this->name)->exists()) {
-            $this->errors()->addToBase("{$this->name} is already aliased to something");
-            return false;
-        }
-        
-        if (self::where("alias_id = (select id from tags where name = ?)", $this->name)->exists()) {
-            $this->errors()->addToBase($this->name . " is already aliased to something");
-            return false;
-        }
-        
-        if (self::where("name = ?", $this->alias_name())->exists()) {
-            $this->errors()->addToBase($this->alias_name() . " is already aliased to something");
+        // lets do this in one query instead of three... and without an inefficient subquery
+        $conflict = self::where('name = ? or name = ? or alias_id = ?',
+            $this->name, $this->alias_name, $this->tag->id)->first();
+
+        if ($conflict != null)
+        {
+            $cname = ($conflict->name == $this->alias_name ? $this->alias_name : $this->name);
+            $this->errors()->addToBase("{$cname} is already aliased to something");
             return false;
         }
     }
+
     
-    protected function validate_tag()
+    public function getAlias()
     {
-        if (!Tag::where(['name' => $this->name])->first()) {
-            $this->errors()->add('tag', "couldn't be created");
-            return false;
+        if ($this->alias_name == null) {
+            if ($this->alias_tag == null) {
+                $this->alias_tag = Tag::find($this->alias_id);
+            }
+
+            $this->alias_name = $this->alias_tag->name;
         }
+
+        return $this->alias_name;
     }
-    
-    protected function validate_alias()
-    {
-        if (!$this->alias_id) {
-            $this->errors()->add('alias', "couldn't be created");
-            return false;
-        }
-    }
-    
+
+
     public function setAlias($name)
     {
-        $tag = Tag::find_or_create_by_name($this->name);
-        $alias_tag = Tag::find_or_create_by_name($name);
-        
-        if ($tag->tag_type != $alias_tag->tag_type)
-            $tag->updateAttribute('tag_type', $alias_tag->tag_type);
-        
-        $this->alias_id = $alias_tag->id;
+        $this->alias_name = $name;
     }
     
     public function alias_name()
     {
-        if ($this->alias_name === null) {
-            $this->alias_name = Tag::find($this->alias_id)->name;
-        }
-        return $this->alias_name;
+        return $this->getAlias();
     }
-    
+
+
     public function alias_tag()
     {
-        return Tag::find_or_create_by_name($this->name);
+        return $this->tag != null ? $this->tag
+            : ($this->tag = Tag::find_or_create_by_name($this->name));
     }
     
     # Destroys the alias and sends a message to the alias's creator.

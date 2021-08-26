@@ -31,8 +31,8 @@ class Tag extends Rails\ActiveRecord\Base
         // replace all sequences of Unicode separators (including space) with underscore
         $tn = preg_replace('/\p{Z}+/', '_', $tn);
 
-        // strip control characters, leading/trailing underscore and search operator conflicts
-        $tn = preg_replace('/([\p{C}\*\`]|^[\~\-\_]+|[\_]+$)+/', '', $tn);
+        // strip control characters, extraneous underscores, and search operator conflicts
+        $tn = preg_replace('/([\p{C}\*\`]+|(?<=\_)\_+|^[\~\-\_]+|[\_]+$)/', '', $tn);
 
         // convert everything that remains to lower case
         $tn = strtolower($tn);
