@@ -1,6 +1,13 @@
 <?php
 class TagImplication extends Rails\ActiveRecord\Base
 {
+    private $predicate = '';    // input predicate string
+    private $consequent = '';   // input consequent string
+    private $predtag = null;    // memoized predicate tag
+    private $constag = null;    // memoized consequent tag
+
+
+
     static public function with_implied($tags)
     {
         if (!$tags)
@@ -44,29 +51,39 @@ class TagImplication extends Rails\ActiveRecord\Base
         
         $this->destroy();
     }
-    
+
+
+
     public function setPredicate($name)
     {
-        $t = Tag::find_or_create_by_name($name);
-        $this->predicate_id = $t->id;
+        $this->predicate = $name;
     }
-    
+
+
+
     public function getPredicate()
     {
-        return Tag::find($this->predicate_id);
+        return $this->predtag != null ? $this->predtag
+            : ($this->predtag = Tag::find($this->predicate_id));
     }
-    
+
+
+
     public function setConsequent($name)
     {
-        $t = Tag::find_or_create_by_name($name);
-        $this->consequent_id = $t->id;
+        $this->consequent = $name;
     }
-    
+
+
+
     public function getConsequent()
     {
-        return Tag::find($this->consequent_id);
+        return $this->constag != null ? $this->constag
+            : ($this->constag = Tag::find($this->consequent_id));
     }
-    
+
+
+
     public function approve($user_id, $ip_addr)
     {
         self::connection()->executeSql("UPDATE tag_implications SET is_pending = FALSE WHERE id = " . $this->id);
@@ -92,10 +109,42 @@ class TagImplication extends Rails\ActiveRecord\Base
     protected function callbacks()
     {
         return array(
-            'before_create' => array('validate_uniqueness')
+            'before_create' => array('validate_input', 'prepare_create', 'validate_uniqueness')
         );
     }
-    
+
+
+
+    protected function validate_input()
+    {
+        $this->predicate = Tag::validate_tag_name($this->predicate);
+        $this->consequent = Tag::validate_tag_name($this->consequent);
+
+        $err = $this->errors();
+        if (!$this->predicate) { $err->add('predicate', 'invalid or empty'); return false; }
+        if (!$this->consequent) { $err->add('consequent', 'invalid or empty'); return false; }
+    }
+
+
+
+    protected function prepare_create()
+    {
+        if (!($this->predtag = Tag::find_or_create_by_name($this->predicate))) {
+            $this->errors()->addToBase("Failed to create tag {$this->predicate}");
+            return false;
+        }
+
+        if (!($this->constag = Tag::find_or_create_by_name($this->consequent))) {
+            $this->errors()->addToBase("Failed to create tag {$this->consequent}");
+            return false;
+        }
+
+        $this->predicate_id = $this->predtag->id;
+        $this->consequent_id = $this->constag->id;
+    }
+
+
+
     protected function validate_uniqueness()
     {
         // $this->predicate_is($this->new_predicate);

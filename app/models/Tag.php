@@ -17,7 +17,50 @@ class Tag extends Rails\ActiveRecord\Base
             ])
             ->versioning_group_by(['action' => 'edit']);
     }
-    
+
+
+
+    /**
+     * Normalize a tag name to conform with tag naming rules.
+     *
+     * \param tn    The tag name to be normalized
+     * \returns     The normalized tag name
+     */
+    static public function normalize_tag_name($tn)
+    {
+        // replace all sequences of Unicode separators (including space) with underscore
+        $tn = preg_replace('/\p{Z}+/', '_', $tn);
+
+        // strip control characters, extraneous underscores, and search operator conflicts
+        $tn = preg_replace('/([\p{C}\*\`]+|(?<=\_)\_+|^[\~\-\_]+|[\_]+$)/', '', $tn);
+
+        // convert everything that remains to lower case
+        $tn = strtolower($tn);
+
+        return $tn;
+    }
+
+
+
+    /**
+     * Normalize and validate a (non-meta) tag name.
+     *
+     * \param tn    The tag name to validate
+     * \returns     The normalized tag when it is valid, otherwise false.
+     */
+    static public function validate_tag_name($tn)
+    {
+        $tn = Tag::normalize_tag_name($tn);
+
+        // check for empty tag and conflicts with meta tags
+        return !($tn == '' || preg_match(
+            '/^(unlocked|deleted|ext|user|sub|vote|fav|md5|rating|width|height|mpixels|score' .
+            '|source|id|date|pool|parent|order|change|holds|pending|shown|limit)\:/', $tn))
+            ? $tn : false;
+    }
+
+
+
     static public function find_or_create_by_name($name)
     {
         # Reserve ` as a field separator for tag/summary.
@@ -102,6 +145,9 @@ class Tag extends Rails\ActiveRecord\Base
         // case range
         if (preg_match('/^(.+?)\.\.(.+)/', $range, $m))
             return array('between', self::parse_cast($m[1], $type), self::parse_cast($m[2], $type));
+
+        elseif (preg_match('/^=(.+)|^\.\.(.+)/', $range, $m))
+            return array('eq', self::parse_cast($m[1], $type));
 
         elseif (preg_match('/^<=(.+)|^\.\.(.+)/', $range, $m))
             return array('lte', self::parse_cast($m[1], $type));
