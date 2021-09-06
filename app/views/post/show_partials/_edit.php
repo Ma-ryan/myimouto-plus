@@ -1,6 +1,6 @@
 <div id="edit" style="display: none;">
   <?= $this->formTag(array('post#update', 'id' => $this->post->id), array('id' => 'edit-form', 'level' => 'member'), function() { ?>
-    <?= $this->hiddenFieldTag("post[old_tags]", $this->post->cached_tags) ?>
+    <?= $this->hiddenFieldTag("post[old_tags]", $this->h($this->post->cached_tags)) ?>
     <table class="form">
       <tfoot>
         <tr>

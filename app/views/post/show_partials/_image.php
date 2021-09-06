@@ -16,7 +16,7 @@
         $jpeg        = $this->post->get_file_jpeg(current_user());
         
         echo $this->imageTag($file_sample['url'], array(
-                    'alt'          => $this->post->tags(),
+                    'alt'          => $this->h($this->post->cached_tags),
                     'id'           => 'image',
                     'class'        => 'image',
                     'width'        => $file_sample['width']  ?: $jpeg['width'],
