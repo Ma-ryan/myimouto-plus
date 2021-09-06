@@ -1,5 +1,5 @@
 <?php $this->canonical_url = $this->urlFor(['post#show', 'id' => $this->post->id, 'only_path' => false]) ?>
-<?php $this->provide('title', str_replace('_', ' ', $this->post->title_tags())) ?>
+<?php $this->provide('title', $this->h(str_replace('_', ' ', $this->post->cached_tags))) ?>
 <?= $this->contentFor('html_header', function() { ?>
   <?= $this->partial('social_meta') ?>
 <?php }) ?>
