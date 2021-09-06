@@ -45,7 +45,7 @@ class CommentController extends ApplicationController
 
     public function create()
     {
-         if (current_user()->is_member_or_lower() && $this->params()->commit == "Post" && Comment::where("user_id = ? AND created_at > ?", current_user()->id, strtotime('-1 hour'))->count() >= CONFIG()->member_comment_limit) {
+         if (current_user()->is_member_or_lower() && $this->params()->commit == "Post" && Comment::where("user_id = ? AND created_at > SUBDATE(NOW(), INTERVAL 1 HOUR)", current_user()->id)->count() >= CONFIG()->member_comment_limit) {
             # TODO: move this to the model
             $this->respond_to_error("Hourly limit exceeded", '#index', array('status' => 421));
             return;
