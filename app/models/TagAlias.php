@@ -46,15 +46,18 @@ class TagAlias extends Rails\ActiveRecord\Base
     
     protected function validate_input()
     {
-        if (!($this->name = Tag::validate_tag_name($this->name))) {
-            $this->errors()->add('name', 'invalid or empty');
-            return false;
-        }
+        $err = $this->errors();
 
-        if (!($this->alias_name = Tag::validate_tag_name($this->alias_name))) {
-            $this->errors()->add('alias', 'invalid or empty');
-            return false;
-        }
+        // verify strings are actually valid UTF-8, otherwise it is malicious binary input
+        if (!mb_check_encoding($this->name, 'UTF-8')) { $err->add('name', 'invalid or empty'); return false; }
+        if (!mb_check_encoding($this->alias_name, 'UTF-8')) { $err->add('alias', 'invalid or empty'); return false; }
+        if (!mb_check_encoding($this->reason, 'UTF-8')) { $err->add('reason', 'invalid'); return false; }
+
+        $this->name = Tag::validate_tag_name($this->name);
+        $this->alias_name = Tag::validate_tag_name($this->alias_name);
+
+        if (!$this->name) { $err->add('name', 'invalid or empty'); return false; }
+        if (!$this->alias_name) { $err->add('alias', 'invalid or empty'); return false; }
     }
 
 
