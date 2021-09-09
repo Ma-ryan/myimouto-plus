@@ -135,8 +135,19 @@ class Comment extends Rails\ActiveRecord\Base
     protected function callbacks()
     {
         return array(
+            'before_save' => array('sanitize_input'),
             'after_save' => array('update_last_commented_at', 'update_fragments'),
-            'after_destroy' => array('update_last_commented_at')
+            'after_destroy' => array('update_last_commented_at'),
         );
     }
+
+
+
+    protected function sanitize_input()
+    {
+        $err = $this->errors();
+        // verify strings are actually valid UTF-8, otherwise it is malicious binary input
+        if (!mb_check_encoding($this->body, 'UTF-8')) { $err->add('comment', 'invalid'); return false; }
+    }
+
 }
