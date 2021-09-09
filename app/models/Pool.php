@@ -365,8 +365,19 @@ class Pool extends Rails\ActiveRecord\Base
         return [
             'before_destroy' => ['destroy_pool_posts'],
             'after_save' => ['expire_cache'],
-            'before_validation' => ['normalize_name'],
+            'before_validation' => ['sanitize_input', 'normalize_name'],
             'after_undo' => ['update_pool_links']
         ];
     }
+
+
+
+    protected function sanitize_input()
+    {
+        $err = $this->errors();
+        // verify strings are actually valid UTF-8, otherwise it is malicious binary input
+        if (!mb_check_encoding($this->name, 'UTF-8')) { $err->add('name', 'invalid'); return false; }
+        if (!mb_check_encoding($this->description, 'UTF-8')) { $err->add('description', 'invalid'); return false; }
+    }
+
 }
