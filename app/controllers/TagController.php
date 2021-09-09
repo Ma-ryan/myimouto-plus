@@ -162,8 +162,14 @@ class TagController extends ApplicationController
     public function update()
     {
         $tag = Tag::where(['name' => $this->params()->tag['name']])->first();
-        if ($tag)
-            $tag->updateAttributes($this->params()->tag);
+
+        if (!$tag) {
+            $this->notice('Error: invalid tag');
+            $this->redirectTo("#index");
+            return;
+        }
+
+        $tag->updateAttributes($this->params()->tag);
         $this->respond_to_success("Tag updated", '#index');
     }
 

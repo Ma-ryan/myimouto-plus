@@ -12,8 +12,12 @@ class TagAliasController extends ApplicationController
     
     public function create()
     {
-        $ta = new TagAlias($this->params()->tag_alias);
-        $ta->is_pending = true;
+        $params = $this->params()->tag_alias;
+        $params['is_pending'] = true;
+        // dont trust the creator_id field in the post data
+        $params['creator_id'] = current_user()->id;
+
+        $ta = new TagAlias($params);
 
         if ($ta->save())
             $this->notice("Tag alias created");

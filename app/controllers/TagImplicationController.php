@@ -14,6 +14,9 @@ class TagImplicationController extends ApplicationController
     {
         $tag_implication = $this->params()->tag_implication;
         $tag_implication['is_pending'] = true;
+        // dont trust the creator_id field from the post data
+        $tag_implication['creator_id'] = current_user()->id;
+
         $ti = new TagImplication($tag_implication);
         
         if ($ti->save()) {

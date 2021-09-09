@@ -117,10 +117,16 @@ class TagImplication extends Rails\ActiveRecord\Base
 
     protected function validate_input()
     {
+        $err = $this->errors();
+
+        // verify strings are actually valid UTF-8, otherwise it is malicious binary input
+        if (!mb_check_encoding($this->predicate, 'UTF-8')) { $err->add('predicate', 'invalid or empty'); return false; }
+        if (!mb_check_encoding($this->consequent, 'UTF-8')) { $err->add('consequent', 'invalid or empty'); return false; }
+        if (!mb_check_encoding($this->reason, 'UTF-8')) { $err->add('reason', 'invalid'); return false; }
+
         $this->predicate = Tag::validate_tag_name($this->predicate);
         $this->consequent = Tag::validate_tag_name($this->consequent);
 
-        $err = $this->errors();
         if (!$this->predicate) { $err->add('predicate', 'invalid or empty'); return false; }
         if (!$this->consequent) { $err->add('consequent', 'invalid or empty'); return false; }
     }
