@@ -235,7 +235,7 @@ class Pool extends Rails\ActiveRecord\Base
     
     public function get_zip_filename(array $options = [])
     {
-        $filename = str_replace('?', "", $this->pretty_name());
+        $filename = str_replace(['?', '/'], ['', ''], $this->pretty_name());
         if (!empty($options['jpeg']))
             $filename .= " (JPG)";
         return $filename . ".zip";
