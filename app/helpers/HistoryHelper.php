@@ -397,7 +397,7 @@ class HistoryHelper extends Rails\ActionView\Helper
 
                         $seq = 'order:' . $change->obj()->post_id . ':' . $change->value;
                         $seq .= '←' . $change->previous->value;
-                        $html .= $this->linkTo($seq, ['post#show', 'id' => $change->obj()->post_id]);
+                        $html .= $this->linkTo($this->h($seq), ['post#show', 'id' => $change->obj()->post_id]);
                         break;
                 }
                 break;
