@@ -43,7 +43,7 @@
 
 <?php if (!$this->post->is_deleted() && $this->post->use_sample(current_user()) && $this->post->can_be_seen_by(current_user()) && !isset($this->post->tags()['dakimakura'])) : ?>
   <div class="status-notice" style="display: none;" id="resized_notice">
-    <?= $this->t(['.resized.info_html', 'larger' => $this->linkTo($this->t('.resized.view_larger'), $this->post->get_file_jpeg()['url'], ['class' => 'highres-show'])]) ?>
+    <?= $this->t(['.resized.info_html', 'larger' => $this->linkTo($this->t('.resized.view_larger'), $this->h($this->post->get_file_jpeg()['url']), ['class' => 'highres-show'])]) ?>
     <!--
     <?php if (!current_user()->is_anonymous() || !CONFIG()->force_image_samples) : ?>
       <?= $this->linkToFunction($this->t('.resized.always_view_original'), 'User.disable_samples()') ?>.
