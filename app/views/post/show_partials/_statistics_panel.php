@@ -2,7 +2,7 @@
   <h5><?= $this->t('.title') ?></h5>
   <ul>
     <li><?= $this->t('.id') ?>: <?= $this->post->id ?></li>
-    <li><?= $this->t('.posted') ?>: <?= $this->t(['.posted_data_html', 'time' => $this->linkTo($this->t(['time.x_ago', 't' => $this->timeAgoInWords($this->post->created_at)]), ["#index", 'tags' => "date:" . substr($this->post->created_at, 0, 10)], ['title' => substr(date('r', strtotime($this->post->created_at)), 0, -6)]), 'user' => $this->linkToIf($this->post->user_id, $this->post->author(), ['user#show', 'id' => $this->post->user_id])]) ?></li>
+    <li><?= $this->t('.posted') ?>: <?= $this->t(['.posted_data_html', 'time' => $this->linkTo($this->t(['time.x_ago', 't' => $this->timeAgoInWords($this->post->created_at)]), ["#index", 'tags' => "date:" . substr($this->post->created_at, 0, 10)], ['title' => substr(date('r', strtotime($this->post->created_at)), 0, -6)]), 'user' => $this->linkToIf($this->post->user_id, $this->h($this->post->author()), ['user#show', 'id' => $this->post->user_id])]) ?></li>
     <?php if (current_user()->is_admin() && $this->post->approver) : ?>
       <li><?= $this->t('.approver') ?>: <?= $this->post->approver->name ?></li>
     <?php endif ?>

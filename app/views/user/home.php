@@ -13,7 +13,7 @@
       <li><?= $this->linkTo($this->t('.reset_password'), ['action' => 'reset_password']) ?></li>
     </ul>
   <?php else: ?>
-    <h2><?= $this->t(['.greet_user', 'u' => current_user()->name]) ?></h2>
+    <h2><?= $this->t(['.greet_user', 'u' => $this->h(current_user()->name])) ?></h2>
     <p><?= $this->t('.action_info') ?></p>
 
     <div class="section">
