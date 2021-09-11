@@ -37,7 +37,7 @@
             </td>
             <td><?= implode(', ', array_map(function($x){return $this->linkTo($this->h($x->name), array('#show', 'id' => $x->id));}, $artist->aliases()->members())) ?></td>
             <?php if ($artist->updater_id) : ?>
-              <td><?= User::find_name($artist->updater_id) ?></td>
+              <td><?= $this->h(User::find_name($artist->updater_id)) ?></td>
             <?php else: ?>
               <td></td>
             <?php endif ?>
