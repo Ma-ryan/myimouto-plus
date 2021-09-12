@@ -161,6 +161,8 @@
       }
     })
   });
++  
++<?= $this->tag_completion_box('$("post_tags")') ?>
 </script>
 
 <?= $this->contentFor('post_cookie_javascripts', function() { ?>
