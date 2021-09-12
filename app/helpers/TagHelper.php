@@ -89,7 +89,7 @@ class TagHelper extends Rails\ActionView\Helper
             // $tag_type = Tag::type_name($name);
             
             // $html .= '<li class="tag-type-' . $tag_type . '">';
-            $html .= '<li class="tag-link tag-type-' . $tag_type . '" data-name="' . $name . '" data-type="' . $tag_type . '">';
+            $html .= '<li class="tag-link tag-type-' . $tag_type . '" data-name="' . $this->h($name) . '" data-type="' . $tag_type . '">';
             
             if (CONFIG()->enable_artists && $tag_type == 'artist')
                 $html .= '<a href="/artist/show?name=' . $this->u($name) . '">?</a> ';

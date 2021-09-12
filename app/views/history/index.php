@@ -76,7 +76,7 @@
               ) ?></td>
             <?php endif ?>
             <td><?= date("M d Y, H:i", strtotime($change->created_at)) ?></td>
-            <td class="author"><?= $this->linkToIf($change->user_id, $change->author(),
+            <td class="author"><?= $this->linkToIf($change->user_id, $this->h($change->author()),
               ['controller' => "user", 'action' => "show", 'id' => $change->user_id],
               ['class' => "user-" . $change->user_id . ($new_user ? " new-user":"")]
             ) ?></td>

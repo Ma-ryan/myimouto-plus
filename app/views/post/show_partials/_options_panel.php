@@ -9,7 +9,7 @@
       <?php $file_jpeg = $this->post->get_file_jpeg() ?>
       <?php if ($this->post->use_sample(current_user()) or current_user()->always_resize_images) : ?>
       <li><?php if (!array_key_exists("dakimakura", $this->post->tags()) || current_user()->is_contributor_or_higher());
-                    echo $this->linkTo($this->t('.view_larger'), $file_jpeg['url'], [
+                    echo $this->linkTo($this->t('.view_larger'), $this->h($file_jpeg['url']), [
                       'class' => ($this->post->has_sample() ? "original-file-changed":"original-file-unchanged") . " highres-show",
                       'id' => 'highres-show', 'large_width' => $this->post->width, 'large_height' => $this->post->height])
           ?>
@@ -17,11 +17,11 @@
       <?php endif ?>
       <li><?php if (array_key_exists("dakimakura", $this->post->tags()) && !current_user()->is_contributor_or_higher()) :
                       $file_sample = $this->post->get_file_sample(current_user());
-                      echo $this->linkTo(($this->post->has_sample() ? $this->t('.download.larger') : $this->t('.download.normal')) . ' (' . $this->numberToHumanSize($file_sample['size']) . ' ' . strtoupper($file_sample['ext']) . ')', $file_sample['url'], array(
+                      echo $this->linkTo(($this->post->has_sample() ? $this->t('.download.larger') : $this->t('.download.normal')) . ' (' . $this->numberToHumanSize($file_sample['size']) . ' ' . strtoupper($file_sample['ext']) . ')', $this->h($file_sample['url']), array(
                       'class' => $this->post->has_sample() ? "original-file-changed":"original-file-unchanged",
                       'id' => 'highres'));
               else:
-                      echo $this->linkTo(($this->post->has_sample() ? $this->t('.download.larger') : $this->t('.download.image')) . ' (' . $this->numberToHumanSize($file_jpeg['size']) . ' ' . strtoupper($file_jpeg['ext']) . ')', $file_jpeg['url'], array(
+                      echo $this->linkTo(($this->post->has_sample() ? $this->t('.download.larger') : $this->t('.download.image')) . ' (' . $this->numberToHumanSize($file_jpeg['size']) . ' ' . strtoupper($file_jpeg['ext']) . ')', $this->h($file_jpeg['url']), array(
                       'class' => ($this->post->has_sample() ? "original-file-changed":"original-file-unchanged"),
                       'id' => 'highres'));
               endif
