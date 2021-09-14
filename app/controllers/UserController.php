@@ -246,14 +246,15 @@ class UserController extends ApplicationController
 
         // filter attributes to only what that the user is actually allowed to change here
         // email and password should not be allowed here as password verification is required
-        $user = array_intersect_key($this->params()->user, [
+        $user = array_intersect_key($this->params()->user, array_fill_keys([
             'blacklisted_tags',
             'my_tags',
             'always_resize_images',
             'receive_dmails',
             'show_samples',
             'use_browser',
-            'show_advanced_editing']);
+            'pool_browse_mode',
+            'show_advanced_editing'], null));
 
         if (current_user()->updateAttributes($user)) {
             $this->respond_to_success("Account settings saved", '#edit');
