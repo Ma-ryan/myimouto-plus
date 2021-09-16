@@ -107,7 +107,7 @@ class TagHelper extends Rails\ActionView\Helper
             } else
                 $mouseover = $mouseout = '';
             
-            $html .= '<a href="/post?tags=' . $this->u($name) . '"' . $mouseover . $mouseout . '>' . (str_replace("_", " ", $name)) . '</a> ';
+            $html .= '<a href="/post?tags=' . $this->u($name) . '"' . $mouseover . $mouseout . '>' . $this->h(str_replace("_", " ", $name)) . '</a> ';
             $html .= '<span class="post-count">' . $count . '</span> ';
             $html .= '</li>';
         }
