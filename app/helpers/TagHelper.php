@@ -12,7 +12,7 @@ class TagHelper extends Rails\ActionView\Helper
         $html = !$prefix ? '' : $this->contentTag('span', $prefix, array('class' => $obsolete_tag));
         $html .= $this->contentTag(
                                     'span',
-                                    $this->linkTo($name, array('post#index', 'tags' => $name)),
+                                    $this->linkTo($this->h($name), array('post#index', 'tags' => $name)),
                                     array('class' => "tag-type-".$tag_type.$obsolete_tag)
                                   );
         return $html;
