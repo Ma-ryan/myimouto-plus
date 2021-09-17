@@ -28,7 +28,13 @@ class PostHelper extends Rails\ActionView\Helper
         
         $image_id = isset($options['image_id']) ? 'id="'.$options['image_id'].'"' : null;
         
-        $image_title = $is_post ? "Rating: ".$post->pretty_rating()." Score: ".$post->score." Tags: ".$this->h($post->cached_tags)." User: ".$this->h($post->author()) : null;
+        $image_title = !$is_post ? null
+            : "#" . $post->id
+            . " | " . $post->pretty_rating()
+            . " | Score: " . $post->score
+            . " | User: " . $this->h($post->author())
+            . " \r\n\r\n"
+            . $this->h($post->cached_tags);
         
         $link_onclick = isset($options['onclick']) ? 'onclick="'.$options['onclick'].'"' : null;
         
