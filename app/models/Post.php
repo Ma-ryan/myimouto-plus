@@ -230,7 +230,7 @@ class Post extends Rails\ActiveRecord\Base
     {
         return [
             'before_create' => ['set_index_timestamp'],
-            'after_create'  => ['after_creation'],
+            'after_create'  => ['after_creation', 'assign_parent'],
             
             'before_delete' => ['clear_avatars'],
             'after_delete'  => ['give_favorites_to_parent', 'decrement_count'],

@@ -49,6 +49,12 @@ trait PostParentMethods
             $this->errors()->add('parent_id', '');
     }
 
+    protected function assign_parent()
+    {
+        if (!$this->parent_id) { return; }
+        $this->set_parent($this->id, $this->parent_id);
+    }
+
     protected function update_parent()
     {
         if (!$this->parentIdChanged() && !$this->statusChanged())
