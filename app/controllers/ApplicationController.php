@@ -130,6 +130,85 @@ class ApplicationController extends Rails\ActionController\Base
     
     # } RespondToHelpers {
     
+
+    protected function respond_forbidden()
+    {
+        $this->respondTo([
+            'html' => function() {
+                // this is actually HTML; Rails has no way to respond with text/plain
+                $this->render(['text' => '<html><head><title>403 - Forbidden</title></head><body>403 - Forbidden</body></html>', 'status' => 403]);
+            },
+            'xml'  => function() {
+                $this->render(['xml' => ['success' => false, 'reason' => 'forbidden'], 'status' => 403]);
+            },
+            'json' => function() {
+                $this->render(['json' => ['success' => false, 'reason' => 'forbidden'], 'status' => 403]);
+            }
+        ]);
+    }
+
+
+    /**
+     * Authorize a controller action to respond to CORS and handle CORS requests.
+     * 
+     * \param $origins      The string '*' or an array of allowed origins
+     * \param $methods      An array of allowed HTTP methods
+     * \param $maxage       Max time (seconds) client may cache CORS response or -1 to prevent caching
+     *
+     * \returns             True to indicate a CORS request was handled and no further processing should
+     *                      be performed; otherwise false indicates normal processing should continue.
+     */
+    protected function handle_cors($origins = '*', $methods = ['OPTIONS', 'GET'], $maxage = -1)
+    {
+        $method = $_SERVER['REQUEST_METHOD'];
+        $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : null;
+
+        if ($origin) // when origin is set then request is a CORS request
+        {
+            if (is_string($origins) && $origins != '*') { $origins = [ $origins ]; }
+            if (!in_array('OPTIONS', $methods)) { array_push($methods, 'OPTIONS'); }
+
+            // check if origin is allowed and output appropriate header
+            if ($origins == '*') {
+                header('Access-Control-Allow-Origin: *');
+            } else if (in_array($origin, $origins)) {
+                header('Access-Control-Allow-Origin: ' . $origin);
+            } else if ($method == 'OPTIONS') {
+                // respond to invalid preflight, do not return CORS headers
+                header('Allow: ' . implode(', ', $methods));
+                $this->render(['nothing' => true, 'status' => 200]);
+                return true;
+            } else { // invalid origin and not preflight so reject the request
+                $this->respond_forbidden();
+                return true;
+            }
+
+            // respond to a valid CORS preflight
+            if ($method == 'OPTIONS') {
+                $smethods = implode(', ', $methods);
+                header('Access-Control-Allow-Methods: ' . $smethods);
+                header('Access-Control-Max-Age: ' . $maxage);
+                header('Allow: ' . $smethods);
+                $this->render(['nothing' => true, 'status' => 200]);
+                return true;
+            }
+
+            // verify method is allowed
+            if (!in_array($method, $methods)) {
+                $this->respond_forbidden();
+                return true;
+            }
+
+        } else if ($method == 'OPTIONS') { // non-CORS request
+            header('Allow: ' . implode(', ', $methods));
+            $this->render(['nothing' => true, 'status' => 200]);
+            return true;
+        }
+
+        return false;
+    }
+
+
     protected function respond_to_success($notice, $redirect_to_params, array $options = array())
     {
         $extra_api_params = isset($options['api']) ? $options['api'] : array();
