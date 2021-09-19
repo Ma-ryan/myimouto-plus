@@ -81,16 +81,11 @@ class Post extends Rails\ActiveRecord\Base
     
     public function normalized_source()
     {
-        if (preg_match('/pixiv\.net\/img/', $this->source)) {
-            if (preg_match('/(\d+)(_s|_m|(_big)?_p\d+)?\.\w+(\?\d+)?\z/', $this->source, $m))
-                $img_id = $m[1];
-            else
-                $img_id = null;
-            return "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=" . $img_id;
-        } elseif (strpos($this->source, 'http://') === 0 || strpos($this->source, 'https://') === 0)
-            return $this->source;
-        else
-            return 'http://' . $this->source;
+        if (preg_match('/^https?:\/\/\w+\.(?:pximg|pixiv)\.net\/.+\/(\d+)(?:\_\w+)?\.\w+$/', $this->source, $match)) {
+            return "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=" . $match[1];
+        }
+
+        return $this->source;
     }
     
     public function clear_avatars()
@@ -235,7 +230,7 @@ class Post extends Rails\ActiveRecord\Base
     {
         return [
             'before_create' => ['set_index_timestamp'],
-            'after_create'  => ['after_creation'],
+            'after_create'  => ['after_creation', 'assign_parent'],
             
             'before_delete' => ['clear_avatars'],
             'after_delete'  => ['give_favorites_to_parent', 'decrement_count'],

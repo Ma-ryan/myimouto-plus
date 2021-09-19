@@ -127,7 +127,7 @@ MyImouto\Application::routes()->draw(function() {
     $this->match('pool/zip/:id/:filename', 'pool#zip', ['constraints' => ['filename' => '/.*/'], 'via' => ['get', 'post']]);
 
     # Post
-    $this->match('post(/index)(.:format)', 'post#index', ['via' => ['get', 'post']]);
+    $this->match('post(/index)(.:format)', 'post#index', ['via' => ['get', 'post', 'options']]);
     $this->match('post/acknowledge_new_deleted_posts', ['via' => ['get', 'post']]);
     $this->match('post/activate', ['via' => ['get', 'post']]);
     $this->match('post/atom(.:format)', 'post#atom', ['format' => 'atom', 'via' => ['get', 'post']]);
