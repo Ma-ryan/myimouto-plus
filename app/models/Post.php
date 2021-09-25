@@ -22,14 +22,14 @@ class Post extends Rails\ActiveRecord\Base
     static public function init_versioning($v)
     {
         $v->versioned_attributes([
-            'source' => ['default' => ''],
+            'source' => ['default' => '', 'allow_reverting_to_default' => true],
             'cached_tags',
             # MI: Allowing reverting to default.
             'is_shown_in_index' => ['default' => true, 'allow_reverting_to_default' => true],
             'rating',
             'is_rating_locked' => ['default' => false],
             'is_note_locked' => ['default' => false],
-            'parent_id' => ['default' => null],
+            'parent_id' => ['default' => null, 'allow_reverting_to_default' => true],
             // iTODO: uncomment when frames are enabled
             // 'frames_pending' => ['default' => '', 'allow_reverting_to_default' => true]
         ]);
