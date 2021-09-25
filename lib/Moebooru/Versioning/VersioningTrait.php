@@ -79,6 +79,7 @@ trait VersioningTrait
     {
         self::transaction(function() {
             foreach (self::versioning()->get_versioned_attributes() as $att => $options) {
+
                 /**
                  * MI: Upon creating a new PoolPost row, Moebooru shows "+post #xxx" in
                  * History. But this seems to be possible only by using the get_versioned_default method
@@ -89,27 +90,30 @@ trait VersioningTrait
                     if ($this->$att == $default[0] && !$this->attributeChanged($att))
                         continue;
                 }
+
+                // we should save all non-default fields for new objects so skip these checks
+                if (!$this->object_is_new) {                    
+                    # MI: If attribute wasn't changed, then just skip it?
+                    if (!$this->attributeChanged($att))
+                        continue;
                 
-                # MI: If attribute wasn't changed, then just skip it?
-                if (!$this->attributeChanged($att))
-                    continue;
-            
-                # Always save all properties on creation.
-                #
-                # Don't use _changed?; it'll be true if a field was changed and then changed back,
-                # in which case we must not create a change entry.
-                $old = $this->attributeWas($att);
-                $new = $this->$att;
-                
-                if ($old == $new && !$this->object_is_new)
-                    continue;
-                
+                    # Always save all properties on creation.
+                    #
+                    # Don't use _changed?; it'll be true if a field was changed and then changed back,
+                    # in which case we must not create a change entry.
+                    $old = $this->attributeWas($att);
+                    $new = $this->$att;
+                    
+                    if ($old == $new && !$this->object_is_new)
+                        continue;
+                }
+
                 $history = $this->get_current_history();
                 $h = new HistoryChange([
                     'table_name' => self::tableName(),
                     'remote_id' => $this->id,
                     'column_name' => $att,
-                    'value' => $new,
+                    'value' => $this->$att,
                     'history_id' => $history->id
                 ]);
                 $h->save();
