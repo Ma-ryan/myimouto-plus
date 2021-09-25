@@ -70,7 +70,7 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
 
     if ($pid % 10 == 0) { // report progress and yield to more important processes
         printf("\rProcessing post history... %5.1f%% (%u/%u)", 100.0*$pid/$pmax, $pid, $pmax);
-        usleep(100 * 1000);
+        usleep(1000);
     }
 
     $sql->begin_transaction();
