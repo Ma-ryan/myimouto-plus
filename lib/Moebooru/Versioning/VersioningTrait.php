@@ -80,19 +80,19 @@ trait VersioningTrait
         self::transaction(function() {
             foreach (self::versioning()->get_versioned_attributes() as $att => $options) {
 
-                // we should always save all fields for new objects so skip these checks
-                if (!$this->object_is_new) {
-                    /**
-                     * MI: Upon creating a new PoolPost row, Moebooru shows "+post #xxx" in
-                     * History. But this seems to be possible only by using the get_versioned_default method
-                     * in Versioning, BUT that method is never called in original versioning.rb.
-                     */
-                    $default = self::versioning()->get_versioned_default($att);
-                    if ($default[1]) {
-                        if ($this->$att == $default[0] && !$this->attributeChanged($att))
-                            continue;
-                    }
-                    
+                /**
+                 * MI: Upon creating a new PoolPost row, Moebooru shows "+post #xxx" in
+                 * History. But this seems to be possible only by using the get_versioned_default method
+                 * in Versioning, BUT that method is never called in original versioning.rb.
+                 */
+                $default = self::versioning()->get_versioned_default($att);
+                if ($default[1]) {
+                    if ($this->$att == $default[0] && !$this->attributeChanged($att))
+                        continue;
+                }
+
+                // we should save all non-default fields for new objects so skip these checks
+                if (!$this->object_is_new) {                    
                     # MI: If attribute wasn't changed, then just skip it?
                     if (!$this->attributeChanged($att))
                         continue;
