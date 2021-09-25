@@ -78,8 +78,8 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
     try {
         $pselect->bind_param('i', $pid);
         $pselect->execute();
-        if (!($post = $pselect->get_result()->fetch_object())) { continue; }
-        if ($post->status == 'deleted') { continue; }
+        if (!($post = $pselect->get_result()->fetch_object())) { $sql->commit(); continue; }
+        if ($post->status == 'deleted') { $sql->commit(); continue; }
         
         $changes = [];
         $cselect->bind_param('i', $pid);
