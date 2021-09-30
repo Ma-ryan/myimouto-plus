@@ -112,7 +112,7 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
         $hid = reset($changes)->history_id;
         
         if (!$hid) {
-            $hinsert->bind_param('ii', $uid, $pid);
+            $hinsert->bind_param('ii', $user->id, $pid);
             $hinsert->execute();
             $hid = $sql->insert_id;
         }
