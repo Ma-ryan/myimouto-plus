@@ -109,7 +109,7 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
         }
 
         $lcnt = 0;
-        $hid = reset($changes)->history_id;
+        $hid = count($changes) == 0 ? null : reset($changes)->history_id;
         
         if (!$hid) {
             $hinsert->bind_param('ii', $user->id, $pid);
