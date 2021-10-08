@@ -33,16 +33,33 @@ $dbconfig = $dbconfig[$input];
 
 print("\nConnecting to SQL server {$dbconfig['host']}...\n");
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+set_error_handler(function($errno, $errstr, $errfile, $errline ){
+    throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
+});
+
 $sql = new mysqli($dbconfig['host'], $dbconfig['username'], $dbconfig['password'], $dbconfig['database']);
 
 
 $pid = 0; $ccnt = 0; $pcnt = 0;
+
+$user = $sql->query(
+    "SELECT `id`, `name` FROM `users`"
+        . " WHERE `level` >= 50"
+        . " ORDER BY `id` ASC"
+        . " LIMIT 1")->fetch_object();
+
+if (!$user) { die("no suitable user account found"); }
+
 $pmax = $sql->query("SELECT MAX(`id`) FROM `posts`")->fetch_row()[0];
-print("\nProcessing post history...");
+
+print("\nHistory will be attributed to user {$user->id} ({$user->name}).");
+print("\nA total of {$pmax} posts will be processed.\n");
+$continue = readline("Continue (y or n): ");
+if (strtolower(trim($continue)) != 'y') { print("Aborting.\n"); exit(0); }
 
 
 $attrs = [
-    'cached_tags' => null,
     'source' => '',
     'rating' => null,
     'parent_id' => null];
@@ -58,7 +75,7 @@ $cselect = $sql->prepare(
 $hinsert = $sql->prepare(
     "INSERT INTO `histories`"
         . "(`created_at`, `user_id`, `group_by_id`, `group_by_table`, `aux_as_json`)"
-        . "VALUES (NOW(), 1, ?, 'posts', NULL)");
+        . "VALUES (NOW(), ?, ?, 'posts', NULL)");
 
 $cinsert = $sql->prepare(
     "INSERT INTO `history_changes`"
@@ -70,7 +87,9 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
 
     if ($pid % 10 == 0) { // report progress and yield to more important processes
         printf("\rProcessing post history... %5.1f%% (%u/%u)", 100.0*$pid/$pmax, $pid, $pmax);
-        usleep(1000);
+        // only yield; if script causes performance issues, comment out sleep and uncomment usleep below
+        sleep(0);
+        //usleep(1000);
     }
 
     $sql->begin_transaction();
@@ -90,10 +109,10 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
         }
 
         $lcnt = 0;
-        $hid = reset($changes)->history_id;
+        $hid = count($changes) == 0 ? null : reset($changes)->history_id;
         
         if (!$hid) {
-            $hinsert->bind_param('i', $pid);
+            $hinsert->bind_param('ii', $user->id, $pid);
             $hinsert->execute();
             $hid = $sql->insert_id;
         }
@@ -111,7 +130,9 @@ for ($pid = 0; $pid <= $pmax; ++$pid) {
         $sql->commit();
     } catch(Exception $ex) {
         $sql->rollback();
-        throw $ex;
+        $msg = $ex->getMessage();
+        print("An error occurred proccesing post #{$pid}:\n{$msg}\n");
+        exit(1);
     }
 }
 
