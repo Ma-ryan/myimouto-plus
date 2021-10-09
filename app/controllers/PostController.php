@@ -329,7 +329,7 @@ class PostController extends ApplicationController
 
     public function index()
     {
-        if ($this->handle_cors('*', ['OPTIONS', 'GET'], 86400)) { return; }
+        if ($this->handle_cors(['#' => ['GET', 'POST'], '*' => ['GET']], 86400)) { return; }
 
         $tags = $this->params()->tags;
         $split_tags = $tags ? array_filter(explode(' ', $tags)) : array();
