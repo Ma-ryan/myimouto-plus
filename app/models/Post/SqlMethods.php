@@ -417,7 +417,7 @@ trait PostSqlMethods
                     $sql .= " ORDER BY f.id DESC";
 
             } elseif ($q['order'] == "random")
-                $sql .= " ORDER BY RAND()";
+                $sql .= " ORDER BY RAND(" . (isset($options['seed']) ? $options['seed'] : '') . ")";
 
             else
                 $use_default_order = true;

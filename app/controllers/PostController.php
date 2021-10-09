@@ -398,8 +398,9 @@ class PostController extends ApplicationController
             }
         }
 
+        $seed = isset($this->params()->seed) ? intval(hash('fnv132', $this->params()->seed), 16) : mt_rand();
         $this->showing_holds_only = isset($q['show_holds']) && $q['show_holds'] == 'only';
-        list ($sql, $params) = Post::generate_sql($q, array('original_query' => $tags, 'from_api' => $from_api, 'order' => "p.id DESC", 'offset' => $offset, 'limit' => $posts_to_load));
+        list ($sql, $params) = Post::generate_sql($q, array('original_query' => $tags, 'from_api' => $from_api, 'order' => "p.id DESC", 'offset' => $offset, 'limit' => $posts_to_load, 'seed' => $seed));
 
         $results = Post::findBySql($sql, $params);
 
