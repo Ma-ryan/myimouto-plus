@@ -432,6 +432,9 @@ class PostController extends ApplicationController
         if ($count < CONFIG()->post_index_default_limit && count($split_tags) == 1) {
             $this->tag_suggestions = Tag::find_suggestions($tags);
         }
+
+        $this->set_client_cache('private', $tags == '' ? CONFIG()->index_client_cache : CONFIG()->search_client_cache);
+
 // exit;
         $this->respondTo(array(
             'html' => function() use ($split_tags, $tags) {
@@ -524,6 +527,7 @@ class PostController extends ApplicationController
                 $this->following_pool_post = PoolPost::where("post_id = ?", $this->post->id)->first();
             }
 
+            $this->set_client_cache('private', CONFIG()->post_client_cache);
             $this->tags = array('include' => $this->post->tags());
             $this->include_tag_reverse_aliases = true;
             $this->set_title(str_replace('_', ' ', $this->post->title_tags()));

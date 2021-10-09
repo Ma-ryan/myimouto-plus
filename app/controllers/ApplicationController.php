@@ -347,6 +347,33 @@ class ApplicationController extends Rails\ActionController\Base
         }
     }
 
+
+    /**
+     * Set cache control headers for client side caching.
+     * 
+     * \param $visibility   Can be 'no-store', 'no-cache', 'private', or 'public'
+     * \param $duration     Duration, in seconds, that the resource can be cached
+     * \param $revalidate   True if validation with server is required, false to allow stale responses
+     */
+    public function set_client_cache($visibility, $duration = 0, $revalidate = false)
+    {
+        if ($visibility == 'no-store') {
+            header("Cache-Control: no-store, max-age=0");
+            header('Expires: Sun, 11 Mar 1984 12:00:00 GMT');
+            header('Pragma: no-cache');
+        } else if ($visibility == 'no-cache' || ($duration == 0 && $revalidate)) {
+            header("Cache-Control: no-cache");
+            header('Expires: Sun, 11 Mar 1984 12:00:00 GMT');
+            header('Pragma: no-cache');
+        } else {
+            header("Cache-Control: {$visibility}, max-age={$duration}" . ($revalidate ? ', must-revalidate' : ''));
+            header('Expires: ' . gmdate(DATE_RFC7231, time() + $duration));
+            header_remove('Pragma');
+        }
+    }
+
+
+    // this does not appear to be used
     public function set_cache_headers()
     {
         $this->response()->headers()->add("Cache-Control", "max-age=300");
