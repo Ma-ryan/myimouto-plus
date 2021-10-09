@@ -10,6 +10,7 @@
   <div style="margin-bottom: 2em;">
     <?= $this->formTag('post#index', array('method' => "get"), function() { ?>
       <div>
+        <?= $this->hiddenFieldTag("seed", mt_rand()) ?>
         <?= $this->textFieldTag("tags", "", array('size' => 30)) ?><br />
         <?= $this->submitTag($this->t('static_search')) ?>
       </div>

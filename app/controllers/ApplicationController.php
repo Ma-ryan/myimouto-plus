@@ -151,31 +151,50 @@ class ApplicationController extends Rails\ActionController\Base
     /**
      * Authorize a controller action to respond to CORS and handle CORS requests.
      * 
-     * \param $origins      The string '*' or an array of allowed origins
-     * \param $methods      An array of allowed HTTP methods
+     * \param $rules        A map where the keys are origins and the values are arrays of the allowed methods
+     *                      for the origin. The special key '#' can be used for a same origin policy and the
+     *                      '*' key can be used for all otherwise unspecified origins.
+     *
      * \param $maxage       Max time (seconds) client may cache CORS response or -1 to prevent caching
      *
      * \returns             True to indicate a CORS request was handled and no further processing should
      *                      be performed; otherwise false indicates normal processing should continue.
      */
-    protected function handle_cors($origins = '*', $methods = ['OPTIONS', 'GET'], $maxage = -1)
+    protected function handle_cors($rules, $maxage = -1)
     {
         $method = $_SERVER['REQUEST_METHOD'];
         $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : null;
+        $allmethods = ['OPTIONS'];
+        foreach(array_values($rules) as $r) { $allmethods = array_merge($allmethods, $r); }
+        $allmethods = array_unique($allmethods);
 
         if ($origin) // when origin is set then request is a CORS request
         {
-            if (is_string($origins) && $origins != '*') { $origins = [ $origins ]; }
-            if (!in_array('OPTIONS', $methods)) { array_push($methods, 'OPTIONS'); }
+            $scheme = $_SERVER['REQUEST_SCHEME'];
+            $domain = $_SERVER['SERVER_NAME'];
+            $ipaddr = $_SERVER['SERVER_ADDR'];
+            $port = $_SERVER['SERVER_PORT'];
 
-            // check if origin is allowed and output appropriate header
-            if ($origins == '*') {
-                header('Access-Control-Allow-Origin: *');
-            } else if (in_array($origin, $origins)) {
+            $self = [
+                "{$scheme}://{$domain}",
+                "{$scheme}://{$domain}:{$port}",
+                "{$scheme}://{$ipaddr}",
+                "{$scheme}://{$ipaddr}:{$port}",
+            ];
+
+            // check if origin is self
+            if (isset($rules[$origin])) {
                 header('Access-Control-Allow-Origin: ' . $origin);
+                $methods = $rules[$origin];
+            } else if (isset($rules['#']) && in_array($origin, $self)) {
+                header('Access-Control-Allow-Origin: ' . $origin);
+                $methods = $rules['#'];
+            } else if (isset($rules['*'])) {
+                header('Access-Control-Allow-Origin: *');
+                $methods = $rules['*'];
             } else if ($method == 'OPTIONS') {
                 // respond to invalid preflight, do not return CORS headers
-                header('Allow: ' . implode(', ', $methods));
+                header('Allow: ' . implode(', ', $allmethods));
                 $this->render(['nothing' => true, 'status' => 200]);
                 return true;
             } else { // invalid origin and not preflight so reject the request
@@ -183,12 +202,13 @@ class ApplicationController extends Rails\ActionController\Base
                 return true;
             }
 
+            if (!in_array('OPTIONS', $methods)) { array_unshift($methods, 'OPTIONS'); }
+
             // respond to a valid CORS preflight
             if ($method == 'OPTIONS') {
-                $smethods = implode(', ', $methods);
-                header('Access-Control-Allow-Methods: ' . $smethods);
+                header('Access-Control-Allow-Methods: ' . implode(', ', $methods));
                 header('Access-Control-Max-Age: ' . $maxage);
-                header('Allow: ' . $smethods);
+                header('Allow: ' . implode(', ', $allmethods));
                 $this->render(['nothing' => true, 'status' => 200]);
                 return true;
             }
@@ -200,7 +220,7 @@ class ApplicationController extends Rails\ActionController\Base
             }
 
         } else if ($method == 'OPTIONS') { // non-CORS request
-            header('Allow: ' . implode(', ', $methods));
+            header('Allow: ' . implode(', ', $allmethods));
             $this->render(['nothing' => true, 'status' => 200]);
             return true;
         }
@@ -327,6 +347,33 @@ class ApplicationController extends Rails\ActionController\Base
         }
     }
 
+
+    /**
+     * Set cache control headers for client side caching.
+     * 
+     * \param $visibility   Can be 'no-store', 'no-cache', 'private', or 'public'
+     * \param $duration     Duration, in seconds, that the resource can be cached
+     * \param $revalidate   True if validation with server is required, false to allow stale responses
+     */
+    public function set_client_cache($visibility, $duration = 0, $revalidate = false)
+    {
+        if ($visibility == 'no-store') {
+            header("Cache-Control: no-store, max-age=0");
+            header('Expires: Sun, 11 Mar 1984 12:00:00 GMT');
+            header('Pragma: no-cache');
+        } else if ($visibility == 'no-cache' || ($duration == 0 && $revalidate)) {
+            header("Cache-Control: no-cache");
+            header('Expires: Sun, 11 Mar 1984 12:00:00 GMT');
+            header('Pragma: no-cache');
+        } else {
+            header("Cache-Control: {$visibility}, max-age={$duration}" . ($revalidate ? ', must-revalidate' : ''));
+            header('Expires: ' . gmdate(DATE_RFC7231, time() + $duration));
+            header_remove('Pragma');
+        }
+    }
+
+
+    // this does not appear to be used
     public function set_cache_headers()
     {
         $this->response()->headers()->add("Cache-Control", "max-age=300");

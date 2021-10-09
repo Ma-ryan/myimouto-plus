@@ -272,6 +272,16 @@ abstract class DefaultConfig
      * *******************************
      */
 
+    # Time, in seconds, client can cache the main index (empty query).
+    # This should be low as user will not see new posts (including their own) until cache expires.
+    public $index_client_cache = 30;
+
+    # Time, in seconds, client can cache search results (non-empty query).
+    public $search_client_cache = 300;
+
+    # Time, in seconds, client can cache a post.
+    public $post_client_cache = 300;
+
     # Default limit for /post
     public $post_index_default_limit = 16;
 

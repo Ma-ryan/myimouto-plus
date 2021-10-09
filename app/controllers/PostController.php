@@ -329,7 +329,7 @@ class PostController extends ApplicationController
 
     public function index()
     {
-        if ($this->handle_cors('*', ['OPTIONS', 'GET'], 86400)) { return; }
+        if ($this->handle_cors(['#' => ['HEAD', 'GET', 'POST'], '*' => ['HEAD', 'GET']], 86400)) { return; }
 
         $tags = $this->params()->tags;
         $split_tags = $tags ? array_filter(explode(' ', $tags)) : array();
@@ -398,8 +398,9 @@ class PostController extends ApplicationController
             }
         }
 
+        $seed = isset($this->params()->seed) ? intval(hash('fnv132', $this->params()->seed), 16) : mt_rand();
         $this->showing_holds_only = isset($q['show_holds']) && $q['show_holds'] == 'only';
-        list ($sql, $params) = Post::generate_sql($q, array('original_query' => $tags, 'from_api' => $from_api, 'order' => "p.id DESC", 'offset' => $offset, 'limit' => $posts_to_load));
+        list ($sql, $params) = Post::generate_sql($q, array('original_query' => $tags, 'from_api' => $from_api, 'order' => "p.id DESC", 'offset' => $offset, 'limit' => $posts_to_load, 'seed' => $seed));
 
         $results = Post::findBySql($sql, $params);
 
@@ -431,6 +432,9 @@ class PostController extends ApplicationController
         if ($count < CONFIG()->post_index_default_limit && count($split_tags) == 1) {
             $this->tag_suggestions = Tag::find_suggestions($tags);
         }
+
+        $this->set_client_cache('private', $tags == '' ? CONFIG()->index_client_cache : CONFIG()->search_client_cache);
+
 // exit;
         $this->respondTo(array(
             'html' => function() use ($split_tags, $tags) {
@@ -523,6 +527,7 @@ class PostController extends ApplicationController
                 $this->following_pool_post = PoolPost::where("post_id = ?", $this->post->id)->first();
             }
 
+            $this->set_client_cache('private', CONFIG()->post_client_cache);
             $this->tags = array('include' => $this->post->tags());
             $this->include_tag_reverse_aliases = true;
             $this->set_title(str_replace('_', ' ', $this->post->title_tags()));
