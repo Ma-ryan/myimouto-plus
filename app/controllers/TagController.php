@@ -114,11 +114,11 @@ class TagController extends ApplicationController
                     // $this->response()->headers()->add("X-Accel-Redirect", Rails::publicPath() . "/tags.xml");
                     // $this->render(array('nothing' => true));
                 // } else {
-                    $this->render(array('xml' => $query->limit($limit)->take(), 'root' => "tags"));
+                    $this->render(array('xml' => $query->paginate($this->page_number(), $limit), 'root' => "tags"));
                 // }
             },
             'json' => function () use ($order, $limit, $query) {
-                $tags = $query->limit($limit)->take();
+                $tags = $query->paginate($this->page_number(), $limit);
                 $this->render(array('json' => $tags));
             }
         ));
