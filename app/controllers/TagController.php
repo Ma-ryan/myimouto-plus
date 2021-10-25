@@ -214,22 +214,7 @@ class TagController extends ApplicationController
         }
 
         $this->respondTo([
-            // fmt.xml do
-                // # We basically have to do this by hand.
-                // builder = Builder::XmlMarkup.new('indent' => 2)
-                // builder.instruct!
-                // xml = builder.tag!("tags") do
-                    // $this->tags.each do |parent, related|
-                        // builder.tag!("tag", 'name' => parent) do
-                            // related.each do |tag, count|
-                                // builder.tag!("tag", 'name' => tag, 'count' => count)
-                            // end
-                        // end
-                    // end
-                // end
-
-                // $this->render(array('xml' => xml)
-            // end
+            'xml', // => execute view tag/related.xml.php
             'json' => function() { $this->render(['json' => json_encode($this->tags)]); }
         ]);
     }
