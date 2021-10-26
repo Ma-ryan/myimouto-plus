@@ -38,10 +38,10 @@ trait PostApiMethods
             'width' => (int)$this->width,
             'height' => (int)$this->height,
             'is_held' => (bool)$this->is_held,
-            'frames_pending_string' => '', //$this->frames_pending,
-            'frames_pending' => [], //$this->frames_api_data($this->frames_pending),
-            'frames_string' => '', //$this->frames,
-            'frames' => [] //frames_api_data(frames)
+            //'frames_pending_string' => '', //$this->frames_pending,
+            //'frames_pending' => [], //$this->frames_api_data($this->frames_pending),
+            //'frames_string' => '', //$this->frames,
+            //'frames' => [] //frames_api_data(frames)
         ];
         
         if ($this->status == "deleted") {
