@@ -49,21 +49,18 @@ class PostController extends ApplicationController
             $user_id = current_user()->id;
         }
 
-        // $is_upload = array_key_exists('post', $_FILES);
+        $tmpfile_path = isset($_FILES['post']) ? $_FILES['post']['tmp_name']['file'] : null;
+        $tmpfile_name = isset($_FILES['post']) ? $_FILES['post']['name']['file'] : null;
 
-        # iTODO
         $post_params = array_merge($this->params()->post ?: array(), array(
             'updater_user_id' => current_user()->id,
             'updater_ip_addr' => $this->request()->remoteIp(),
             'user_id'         => current_user()->id,
             'ip_addr'         => $this->request()->remoteIp(),
             'status'          => $status,
-            'tempfile_path'   => $_FILES['post']['tmp_name']['file'],
-            'tempfile_name'   => $_FILES['post']['name']['file'],
-            'is_import'       => false, # Make sure to keep this value false
-            // 'tempfile_path'   => $is_upload ? $_FILES['post']['tmp_name']['file'] : null,
-            // 'tempfile_name'   => $is_upload ? $_FILES['post']['name']['file'] : null,
-            // 'is_upload'       => $is_upload,
+            'tempfile_path'   => $tmpfile_path,
+            'tempfile_name'   => $tmpfile_name,
+            'is_import'       => false,
         ));
 
         $this->post = Post::create($post_params);
