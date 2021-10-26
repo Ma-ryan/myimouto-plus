@@ -10,7 +10,7 @@ foreach ($this->posts as $post)
 
     foreach ($post->api_attributes() as $key => $value)
     {
-        if (!isset($value) || strpos($key, 'frame') === 0) { continue; }
+        if (!isset($value)) { continue; }
         if (is_bool($value)) { $value = $value ? 'true' : 'false'; }
         $pel->setAttribute($key, strval($value));
     }
