@@ -87,6 +87,37 @@ trait PostApiMethods
     {
         unset($params['frames']);
         unset($params['frames_warehoused']);
+        unset($params['id']);
+        unset($params['user_id']);
+        unset($params['file_size']);
+        unset($params['md5']);
+        unset($params['last_commented_at']);
+        unset($params['last_noted_at']);
+        unset($params['cached_tags']);
+        unset($params['width']);
+        unset($params['height']);
+        unset($params['created_at']);
+        unset($params['preview_width']);
+        unset($params['preview_height']);
+        unset($params['actual_preview_width']);
+        unset($params['actual_preview_height']);
+        unset($params['score']);
+        unset($params['has_children']);
+        unset($params['status']);
+        unset($params['sample_Width']);
+        unset($params['sample_height']);
+        unset($params['sample_size']);
+        unset($params['index_timestamp']);
+        unset($params['jpeg_width']);
+        unset($params['jpeg_height']);
+        unset($params['jpeg_size']);
+        unset($params['approver_id']);
+
+        if (!current_user()->is_privileged_or_higher()) {
+            unset($params['is_note_locked']);
+            unset($params['is_rating_locked']);
+            unset($params['is_shown_in_index']);
+        }
     }
 
     /**
