@@ -529,13 +529,17 @@ class PostController extends ApplicationController
             $this->include_tag_reverse_aliases = true;
             $this->set_title(str_replace('_', ' ', $this->post->title_tags()));
             $this->respondTo([
-                'html'
+                'html',
+                'xml',
+                'json' => function() { $this->render(['json' => $this->post->api_attributes()]); }
             ]);
         } catch (Rails\ActiveRecord\Exception\RecordNotFoundException $e) {
+            $pid = $this->params()->id;
+            $apierr = ['success' => false, 'reason' => "post with id {$pid} not found"];
             $this->respondTo([
-                'html' => function() {
-                    $this->render(array('action' => 'show_empty', 'status' => 404));
-                }
+                'html' => function() { $this->render(['action' => 'show_empty', 'status' => 404]); },
+                'json' => function() use ($apierr) { $this->render(['json' => $apierr, 'status' => 404]); },
+                'xml' => function() use ($apierr) { $this->render(['xml' => $apierr, 'root' => 'response', 'status' => 404]); },
             ]);
         }
     }
