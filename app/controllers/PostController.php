@@ -653,15 +653,19 @@ class PostController extends ApplicationController
         $p = Post::find($this->params()->id);
         $score = (int)$this->params()->score;
 
-        if (!current_user()->is_mod_or_higher() && ($score < 0 || $score > 3)) {
-            $this->respond_to_error("Invalid score", array("#show", 'id' => $this->params()->id, 'tag_title' => $p->tag_title(), 'status' => 424));
-            return;
-        }
+        // the score will be clamped to [0,3] anyway so no need for this...
+        //if (!current_user()->is_mod_or_higher() && ($score < 0 || $score > 3)) {
+        //    $this->respond_to_error("Invalid score", array("#show", 'id' => $this->params()->id, 'tag_title' => $p->tag_title(), 'status' => 424));
+        //    return;
+        //}
 
         $vote_successful = $p->vote($score, current_user());
 
-        $api_data = Post::batch_api_data(array($p));
-        $api_data['voted_by'] = $p->voted_by();
+        // there is no reason to return all of this data; the client likely doesn't care
+        // and can use /post/index or /post/show if they do actually want the post data
+        //$api_data = Post::batch_api_data(array($p));
+        //$api_data['voted_by'] = $p->voted_by();
+        $api_data = ['success' => (bool)$vote_successful];
 
         if ($vote_successful)
             $this->respond_to_success("Vote saved", array("#show", 'id' => $this->params()->id, 'tag_title' => $p->tag_title()), array('api' => $api_data));
