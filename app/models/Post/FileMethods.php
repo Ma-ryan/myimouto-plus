@@ -475,7 +475,7 @@ trait PostFileMethods
         return $dim;
     }
 
-    public function generate_sample($force_regen = false)
+    public function generate_sample($force_regen = true)
     {
         if ($this->gif() || !$this->image()) return true;
         elseif (!CONFIG()->image_samples) return true;
@@ -531,7 +531,7 @@ trait PostFileMethods
         return true;
     }
     
-    protected function generate_preview($force_regen = false)
+    protected function generate_preview($force_regen = true)
     {
         if (!$this->image() || (!$this->width && !$this->height))
             return true;
@@ -573,7 +573,7 @@ trait PostFileMethods
 
     # If the JPEG version needs to be generated (or regenerated), output it to tempfile_jpeg_path.    On
     # error, return; false; on success or no-op, return; true.
-    protected function generate_jpeg($force_regen = false)
+    protected function generate_jpeg($force_regen = true)
     {
         if ($this->gif() || !$this->image()) return true;
         elseif (!CONFIG()->jpeg_enable) return true;
