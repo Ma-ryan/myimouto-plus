@@ -176,6 +176,11 @@ class PostController extends ApplicationController
         $post = $this->params()->post;
         Post::filter_api_changes($post);
 
+        if (isset($post['rating']) && $post['rating'] != $this->post->rating && $this->post->is_rating_locked && !current_user()->is_privileged_or_higher()) {
+            $this->respond_to_error('Rating Locked', ['#show', 'id' => $this->params()->id], ['status' => 400]);
+            return;
+        }
+
         $post['updater_user_id'] = current_user()->id;
         $post['updater_ip_addr'] = $this->request()->remoteIp();
 
