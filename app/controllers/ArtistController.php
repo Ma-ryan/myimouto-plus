@@ -100,7 +100,8 @@ class ArtistController extends ApplicationController
         $query = Artist::none();
         
         $page = $this->page_number();
-        $per_page = 50;
+        $per_page = $this->params()->limit;
+        $per_page = is_numeric($per_page) ? intval($per_page) : 50;
         
         if ($this->params()->name && !$aliases_only)
             $query = Artist::generate_sql($this->params()->name);
