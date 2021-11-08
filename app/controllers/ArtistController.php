@@ -27,7 +27,8 @@ class ArtistController extends ApplicationController
         $this->artist = Artist::find($this->params()->id);
 
          if ($this->request()->isPost()) {
-             if ($this->params()->commit == "Yes") {
+            // API wont have commit button so flip the logic, check for the no button to fix the API.
+            if ($this->params()->commit != "No") {
                 $this->artist->destroy();
                 $this->respond_to_success("Artist deleted", ['#index', 'page' => $this->page_number()]);
             } else {
