@@ -77,7 +77,9 @@ class CommentController extends ApplicationController
         $this->set_title('Comments');
         
         if ($this->request()->format() == "json" || $this->request()->format() == "xml") {
-            $this->comments = Comment::generate_sql($this->params()->all())->order("id DESC")->paginate($this->page_number(), 25);
+            $limit = $this->params()->limit;
+            $limit = is_numeric($limit) ? intval($limit) : 25;
+            $this->comments = Comment::generate_sql($this->params()->all())->order("id DESC")->paginate($this->page_number(), $limit);
             $this->respond_to_list("comments");
         } else {
             $this->posts = Post::where("last_commented_at IS NOT NULL")->order("last_commented_at DESC")->paginate($this->page_number(), 10);
