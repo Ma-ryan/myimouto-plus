@@ -80,7 +80,11 @@ class CommentController extends ApplicationController
             $limit = $this->params()->limit;
             $limit = is_numeric($limit) ? intval($limit) : 25;
             $this->comments = Comment::generate_sql($this->params()->all())->order("id DESC")->paginate($this->page_number(), $limit);
-            $this->respond_to_list("comments");
+            $this->respondTo([
+                'html',
+                'xml',
+                'json' => function() { $this->render(['json' => $this->comments->toJson() ]); }
+            ]);
         } else {
             $this->posts = Post::where("last_commented_at IS NOT NULL")->order("last_commented_at DESC")->paginate($this->page_number(), 10);
 
