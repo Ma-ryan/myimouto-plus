@@ -69,7 +69,11 @@ class CommentController extends ApplicationController
     {
         $this->set_title('Comment');
         $this->comment = Comment::find($this->params()->id);
-        $this->respond_to_list("comment");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->comment->toJson() ]); }
+        ]);
     }
 
     public function index()
