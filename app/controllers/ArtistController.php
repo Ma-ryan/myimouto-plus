@@ -115,7 +115,11 @@ class ArtistController extends ApplicationController
         
         $this->artists = $query->paginate($page, $per_page);
 
-        $this->respond_to_list("artists");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->artists->toJson()]); },
+        ]);
     }
 
     public function show()
