@@ -61,7 +61,11 @@ class NoteController extends ApplicationController
             $this->notes = NoteVersion::order("id DESC")->paginate($this->page_number(), 25);
         }
 
-        $this->respond_to_list("notes");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->notes]); }
+        ]);
     }
 
     // public function revert()
