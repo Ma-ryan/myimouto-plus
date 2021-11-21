@@ -110,4 +110,22 @@ class Note extends Rails\ActiveRecord\Base
     {
         return $relation->order("updated_at DESC");
     }
+
+
+    public function asJson()
+    {
+        return [
+            'id'            => $this->id,
+            'created_at'    => $this->created_at,
+            'updated_at'    => $this->updated_at,
+            'user_id'       => $this->user_id,
+            'x'             => $this->x,
+            'y'             => $this->y,
+            'width'         => $this->width,
+            'height'        => $this->height,
+            'version'       => $this->version,
+            'post_id'       => $this->post_id,
+            'body'          => $this->body,
+        ];
+    }
 }
