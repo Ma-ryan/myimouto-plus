@@ -4,7 +4,7 @@ $root = $dom->appendChild($dom->createElement('post'));
 
 foreach ($this->post->api_attributes() as $key => $value)
 {
-    if (!isset($value)) { continue; }
+    if (!isset($value) || is_array($value)) { continue; }
     if (is_bool($value)) { $value = $value ? 'true' : 'false'; }
     $root->setAttribute($key, strval($value));
 }
