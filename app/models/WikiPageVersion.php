@@ -42,6 +42,6 @@ class WikiPageVersion extends Rails\ActiveRecord\Base
 
     public function asJson(array $args = array())
     {
-        return array('id' => $this->id, 'created_at' => $this->created_at, 'updated_at' => $this->updated_at, 'title' => $this->title, 'body' => $this->body, 'updater_id' => $this->user_id, 'locked' => $this->is_locked, 'version' => $this->version, 'post_id' => $this->post_id);
+        return array('id' => $this->id, 'created_at' => $this->created_at, 'updated_at' => $this->updated_at, 'title' => $this->title, 'body' => $this->body, 'updater_id' => $this->user_id, 'locked' => $this->is_locked, 'version' => $this->version);
     }
 }

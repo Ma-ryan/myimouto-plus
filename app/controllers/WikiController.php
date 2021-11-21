@@ -178,7 +178,11 @@ class WikiController extends ApplicationController
         
         $this->wiki_pages = WikiPageVersion::where('wiki_page_id = ?', $wiki_id)->order('version DESC')->take();
 
-        $this->respond_to_list("wiki_pages");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->wiki_pages->toJson()]); },
+        ]);
     }
 
     public function diff()
