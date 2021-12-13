@@ -143,6 +143,29 @@ trait PostFileMethods
         
         return $name;
     }
+
+
+    public function download_name()
+    {
+        $name = current_user()->download_name;
+
+        if (!$name) {
+            $name = CONFIG()->use_pretty_image_urls
+                ? $this->pretty_file_name() . '.' . $this->file_ext
+                : $this->file_name();
+        } else {
+            $tags = !strpos($name, '{TAGS}') ? ''
+                : str_replace(['/', '?'], ['_', ''], Tag::compact_tags($this->cached_tags, 150));
+
+            $name = str_replace(
+                ['{ID}', '{MD5}', '{WIDTH}', '{HEIGHT}', '{SIZE}', '{TAGS}'],
+                [$this->id, $this->md5, $this->width, $this->height, $this->file_size, $tags],
+                $name) . '.' . $this->file_ext;
+        }
+
+        return $name;
+    }
+
     
     public function file_name()
     {

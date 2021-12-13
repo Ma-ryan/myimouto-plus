@@ -244,7 +244,12 @@ class UserController extends ApplicationController
             return;
         }
 
-        if (current_user()->updateAttributes($this->params()->user)) {
+        $user = $this->params()->user;
+        unset($user['name']);
+        $dname = trim($user['download_name']);
+        $user['download_name'] = strlen($dname) == 0 ? null : $dname;
+
+        if (current_user()->updateAttributes($user)) {
             $this->respond_to_success("Account settings saved", '#edit');
         } else {
             if ($this->params()->render and $this->params()->render['view']) {

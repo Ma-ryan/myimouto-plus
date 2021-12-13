@@ -52,6 +52,25 @@
         </tr>
         <tr>
           <th>
+            <label class="block" for="user_download_mode">Download Mode</label>
+            <p>Behavior of download link.</p>
+          </th>
+          <td>
+            <?= $this->select("user", "download_mode",
+                ['Open Image' => '0', 'Open New Tab' => '1', 'Trigger Download' => '2']) ?>
+          </td>
+        </tr>
+        <tr>
+          <th>
+            <label class="block" for="user_download_name">Download File Name</label>
+            <p>Format of download file name (blank for default).</p>
+          </th>
+          <td>
+            <?= $this->textField("user", "download_name", ['size' => 40]) ?>
+          </td>
+        </tr>
+        <tr>
+          <th>
             <label class="block" for="user_always_resize_images"><?= $this->t('user11') ?></label>
             <p><?= $this->t('user12') ?></p>
           </th>

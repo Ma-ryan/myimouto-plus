@@ -15,27 +15,17 @@
           ?>
       </li>
       <?php endif ?>
-      <li><?php if (array_key_exists("dakimakura", $this->post->tags()) && !current_user()->is_contributor_or_higher()) :
-                      $file_sample = $this->post->get_file_sample(current_user());
-                      echo $this->linkTo(($this->post->has_sample() ? $this->t('.download.larger') : $this->t('.download.normal')) . ' (' . $this->numberToHumanSize($file_sample['size']) . ' ' . strtoupper($file_sample['ext']) . ')', $this->h($file_sample['url']), array(
-                      'class' => $this->post->has_sample() ? "original-file-changed":"original-file-unchanged",
-                      'id' => 'highres'));
-              else:
-                      echo $this->linkTo(($this->post->has_sample() ? $this->t('.download.larger') : $this->t('.download.image')) . ' (' . $this->numberToHumanSize($file_jpeg['size']) . ' ' . strtoupper($file_jpeg['ext']) . ')', $this->h($file_jpeg['url']), array(
-                      'class' => ($this->post->has_sample() ? "original-file-changed":"original-file-unchanged"),
-                      'id' => 'highres'));
-              endif
-          ?>
-      </li>
-      <?php if ($this->post->has_jpeg()) : ?>
-        <?php $file_image = $this->post->get_file_image() ?>
-        <?php # If we have a JPEG, the above link was the JPEG.  Link to the PNG here. ?>
-        <li><?= $this->linkTo($this->t('.download.normal').' '.strtoupper($file_image['ext']).' ('.$this->numberToHumanSize($file_image['size']).')', $file_image['url'], array(
-                        'class' => 'original-file-unchanged',
-                        'id' => 'png'));
-                ?>
-        </li>
-      <?php endif ?>
+
+    <?php
+        $file_image = $this->post->get_file_image();
+        $file_ext = strtoupper($file_image['ext']);
+        $file_size = $this->numberToHumanSize($file_image['size']);
+        $file_attrs = ['class' => 'original-file-unchanged', 'id' => 'png'];
+        if (current_user()->download_mode == 1) { $file_attrs['target'] = '_blank'; }
+        else if (current_user()->download_mode == 2) { $file_attrs['download'] = $this->post->download_name(); }
+        echo($this->linkTo($this->t('.download.larger') . " ({$file_size} {$file_ext})", $file_image['url'], $file_attrs));
+    ?>
+
     <?php endif ?>
     <?php if ($this->post->can_user_delete(current_user())) : ?>
     <li><?= $this->linkTo($this->t('.delete'), array('#delete', 'id' => $this->post->id)) ?></li>

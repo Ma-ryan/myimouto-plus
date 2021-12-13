@@ -8,7 +8,9 @@ class Post_ImageStore_LocalHierarchy extends Post_ImageStore_Base
 
     public function file_url()
     {
-        if (CONFIG()->use_pretty_image_urls)
+        if (current_user()->download_name)
+            return CONFIG()->url_base . "/image/".$this->_post->md5."/".$this->_post->download_name();
+        else if (CONFIG()->use_pretty_image_urls)
             return CONFIG()->url_base . "/image/".$this->_post->md5."/".$this->_post->pretty_file_name().".".$this->_post->file_ext;
         else
             return CONFIG()->url_base . "/data/image/".$this->_post->file_name();

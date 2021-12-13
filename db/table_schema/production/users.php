@@ -152,6 +152,8 @@ return array (
       'type' => 'tinyint(1)',
       'default' => '0',
     ),
+    'download_mode' => [ 'type' => 'tinyint(1)', 'default' => 0 ],
+    'download_name' => [ 'type' => 'varchar(255)', 'default' => 0 ],
   ),
   1 => 
   array (
