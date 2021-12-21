@@ -114,11 +114,11 @@ class TagController extends ApplicationController
                     // $this->response()->headers()->add("X-Accel-Redirect", Rails::publicPath() . "/tags.xml");
                     // $this->render(array('nothing' => true));
                 // } else {
-                    $this->render(array('xml' => $query->limit($limit)->take(), 'root' => "tags"));
+                    $this->render(array('xml' => $query->paginate($this->page_number(), $limit), 'root' => "tags"));
                 // }
             },
             'json' => function () use ($order, $limit, $query) {
-                $tags = $query->limit($limit)->take();
+                $tags = $query->paginate($this->page_number(), $limit);
                 $this->render(array('json' => $tags));
             }
         ));
@@ -214,22 +214,7 @@ class TagController extends ApplicationController
         }
 
         $this->respondTo([
-            // fmt.xml do
-                // # We basically have to do this by hand.
-                // builder = Builder::XmlMarkup.new('indent' => 2)
-                // builder.instruct!
-                // xml = builder.tag!("tags") do
-                    // $this->tags.each do |parent, related|
-                        // builder.tag!("tag", 'name' => parent) do
-                            // related.each do |tag, count|
-                                // builder.tag!("tag", 'name' => tag, 'count' => count)
-                            // end
-                        // end
-                    // end
-                // end
-
-                // $this->render(array('xml' => xml)
-            // end
+            'xml', // => execute view tag/related.xml.php
             'json' => function() { $this->render(['json' => json_encode($this->tags)]); }
         ]);
     }

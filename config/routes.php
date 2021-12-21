@@ -145,7 +145,7 @@ MyImouto\Application::routes()->draw(function() {
     $this->match('post/popular_by_week', ['via' => ['head', 'get', 'post']]);
     $this->match('post/popular_recent', ['via' => ['head', 'get', 'post']]);
     $this->match('post/random(/:id)', 'post#random', ['via' => ['head', 'get', 'post']]);
-    $this->match('post/show(/:id)(/*tag_title)', 'post#show', ['constraints' => ['id' => '/^\d+$/'], 'format' => false, 'via' => ['head', 'get', 'post']]);
+    $this->match('post/show(.:format)(/:id)(/*tag_title)', 'post#show', ['constraints' => ['id' => '/^\d+$/'], 'via' => ['head', 'get', 'post']]);
     $this->match('post/similar(/:id)', 'post#similar', ['via' => ['head', 'get', 'post']]);
     $this->match('post/undelete(/:id)', 'post#undelete', ['via' => ['head', 'get', 'post']]);
     $this->match('post/update_batch', ['via' => ['head', 'get', 'post']]);

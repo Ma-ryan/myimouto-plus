@@ -36,18 +36,14 @@ class NoteController extends ApplicationController
         } else {
             $this->posts = Post::where("last_noted_at IS NOT NULL")->order("last_noted_at DESC")->paginate($this->page_number(), 16);
         }
-        # iTODO:
+
+        $this->notes = new Rails\ActiveRecord\Collection();
+        foreach ($this->posts as $post) { $this->notes->merge($post->notes); }
+
         $this->respondTo([
             'html',
-            'xml' => function() {
-                $notes = new Rails\ActiveRecord\Collection();
-                foreach ($this->posts as $post)
-                    $notes->merge($post->notes);
-                $this->render(['xml' => $notes, 'root' => "notes"]);
-            },
-            'json' => function() {
-                 // {render :json => @posts.map {|x| x.notes}.flatten.to_json}
-            }
+            'xml',
+            'json' => function() { $this->render(['json' => $this->notes]); }
         ]);
     }
 
@@ -65,7 +61,11 @@ class NoteController extends ApplicationController
             $this->notes = NoteVersion::order("id DESC")->paginate($this->page_number(), 25);
         }
 
-        $this->respond_to_list("notes");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->notes]); }
+        ]);
     }
 
     // public function revert()

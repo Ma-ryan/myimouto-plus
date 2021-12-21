@@ -69,7 +69,11 @@ class CommentController extends ApplicationController
     {
         $this->set_title('Comment');
         $this->comment = Comment::find($this->params()->id);
-        $this->respond_to_list("comment");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->comment->toJson() ]); }
+        ]);
     }
 
     public function index()
@@ -77,8 +81,14 @@ class CommentController extends ApplicationController
         $this->set_title('Comments');
         
         if ($this->request()->format() == "json" || $this->request()->format() == "xml") {
-            $this->comments = Comment::generate_sql($this->params()->all())->order("id DESC")->paginate($this->page_number(), 25);
-            $this->respond_to_list("comments");
+            $limit = $this->params()->limit;
+            $limit = is_numeric($limit) ? intval($limit) : 25;
+            $this->comments = Comment::generate_sql($this->params()->all())->order("id DESC")->paginate($this->page_number(), $limit);
+            $this->respondTo([
+                'html',
+                'xml',
+                'json' => function() { $this->render(['json' => $this->comments->toJson() ]); }
+            ]);
         } else {
             $this->posts = Post::where("last_commented_at IS NOT NULL")->order("last_commented_at DESC")->paginate($this->page_number(), 10);
 

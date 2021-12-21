@@ -27,7 +27,8 @@ class ArtistController extends ApplicationController
         $this->artist = Artist::find($this->params()->id);
 
          if ($this->request()->isPost()) {
-             if ($this->params()->commit == "Yes") {
+            // API wont have commit button so flip the logic, check for the no button to fix the API.
+            if ($this->params()->commit != "No") {
                 $this->artist->destroy();
                 $this->respond_to_success("Artist deleted", ['#index', 'page' => $this->page_number()]);
             } else {
@@ -100,7 +101,8 @@ class ArtistController extends ApplicationController
         $query = Artist::none();
         
         $page = $this->page_number();
-        $per_page = 50;
+        $per_page = $this->params()->limit;
+        $per_page = is_numeric($per_page) ? intval($per_page) : 50;
         
         if ($this->params()->name && !$aliases_only)
             $query = Artist::generate_sql($this->params()->name);
@@ -114,7 +116,11 @@ class ArtistController extends ApplicationController
         
         $this->artists = $query->paginate($page, $per_page);
 
-        $this->respond_to_list("artists");
+        $this->respondTo([
+            'html',
+            'xml',
+            'json' => function() { $this->render(['json' => $this->artists->toJson()]); },
+        ]);
     }
 
     public function show()

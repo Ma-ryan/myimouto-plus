@@ -143,6 +143,29 @@ trait PostFileMethods
         
         return $name;
     }
+
+
+    public function download_name()
+    {
+        $name = current_user()->download_name;
+
+        if (!$name) {
+            $name = CONFIG()->use_pretty_image_urls
+                ? $this->pretty_file_name() . '.' . $this->file_ext
+                : $this->file_name();
+        } else {
+            $tags = !strpos($name, '{TAGS}') ? ''
+                : str_replace(['/', '?'], ['_', ''], Tag::compact_tags($this->cached_tags, 150));
+
+            $name = str_replace(
+                ['{ID}', '{MD5}', '{WIDTH}', '{HEIGHT}', '{SIZE}', '{TAGS}'],
+                [$this->id, $this->md5, $this->width, $this->height, $this->file_size, $tags],
+                $name) . '.' . $this->file_ext;
+        }
+
+        return $name;
+    }
+
     
     public function file_name()
     {
@@ -475,7 +498,7 @@ trait PostFileMethods
         return $dim;
     }
 
-    public function generate_sample($force_regen = false)
+    public function generate_sample($force_regen = true)
     {
         if ($this->gif() || !$this->image()) return true;
         elseif (!CONFIG()->image_samples) return true;
@@ -531,7 +554,7 @@ trait PostFileMethods
         return true;
     }
     
-    protected function generate_preview($force_regen = false)
+    protected function generate_preview($force_regen = true)
     {
         if (!$this->image() || (!$this->width && !$this->height))
             return true;
@@ -573,7 +596,7 @@ trait PostFileMethods
 
     # If the JPEG version needs to be generated (or regenerated), output it to tempfile_jpeg_path.    On
     # error, return; false; on success or no-op, return; true.
-    protected function generate_jpeg($force_regen = false)
+    protected function generate_jpeg($force_regen = true)
     {
         if ($this->gif() || !$this->image()) return true;
         elseif (!CONFIG()->jpeg_enable) return true;

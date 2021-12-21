@@ -49,21 +49,18 @@ class PostController extends ApplicationController
             $user_id = current_user()->id;
         }
 
-        // $is_upload = array_key_exists('post', $_FILES);
+        $tmpfile_path = isset($_FILES['post']) ? $_FILES['post']['tmp_name']['file'] : null;
+        $tmpfile_name = isset($_FILES['post']) ? $_FILES['post']['name']['file'] : null;
 
-        # iTODO
         $post_params = array_merge($this->params()->post ?: array(), array(
             'updater_user_id' => current_user()->id,
             'updater_ip_addr' => $this->request()->remoteIp(),
             'user_id'         => current_user()->id,
             'ip_addr'         => $this->request()->remoteIp(),
             'status'          => $status,
-            'tempfile_path'   => $_FILES['post']['tmp_name']['file'],
-            'tempfile_name'   => $_FILES['post']['name']['file'],
-            'is_import'       => false, # Make sure to keep this value false
-            // 'tempfile_path'   => $is_upload ? $_FILES['post']['tmp_name']['file'] : null,
-            // 'tempfile_name'   => $is_upload ? $_FILES['post']['name']['file'] : null,
-            // 'is_upload'       => $is_upload,
+            'tempfile_path'   => $tmpfile_path,
+            'tempfile_name'   => $tmpfile_name,
+            'is_import'       => false,
         ));
 
         $this->post = Post::create($post_params);
@@ -178,6 +175,11 @@ class PostController extends ApplicationController
 
         $post = $this->params()->post;
         Post::filter_api_changes($post);
+
+        if (isset($post['rating']) && $post['rating'] != $this->post->rating && $this->post->is_rating_locked && !current_user()->is_privileged_or_higher()) {
+            $this->respond_to_error('Rating Locked', ['#show', 'id' => $this->params()->id], ['status' => 400]);
+            return;
+        }
 
         $post['updater_user_id'] = current_user()->id;
         $post['updater_ip_addr'] = $this->request()->remoteIp();
@@ -532,13 +534,17 @@ class PostController extends ApplicationController
             $this->include_tag_reverse_aliases = true;
             $this->set_title(str_replace('_', ' ', $this->post->title_tags()));
             $this->respondTo([
-                'html'
+                'html',
+                'xml',
+                'json' => function() { $this->render(['json' => $this->post->api_attributes()]); }
             ]);
         } catch (Rails\ActiveRecord\Exception\RecordNotFoundException $e) {
+            $pid = $this->params()->id;
+            $apierr = ['success' => false, 'reason' => "post with id {$pid} not found"];
             $this->respondTo([
-                'html' => function() {
-                    $this->render(array('action' => 'show_empty', 'status' => 404));
-                }
+                'html' => function() { $this->render(['action' => 'show_empty', 'status' => 404]); },
+                'json' => function() use ($apierr) { $this->render(['json' => $apierr, 'status' => 404]); },
+                'xml' => function() use ($apierr) { $this->render(['xml' => $apierr, 'root' => 'response', 'status' => 404]); },
             ]);
         }
     }
@@ -652,15 +658,19 @@ class PostController extends ApplicationController
         $p = Post::find($this->params()->id);
         $score = (int)$this->params()->score;
 
-        if (!current_user()->is_mod_or_higher() && ($score < 0 || $score > 3)) {
-            $this->respond_to_error("Invalid score", array("#show", 'id' => $this->params()->id, 'tag_title' => $p->tag_title(), 'status' => 424));
-            return;
-        }
+        // the score will be clamped to [0,3] anyway so no need for this...
+        //if (!current_user()->is_mod_or_higher() && ($score < 0 || $score > 3)) {
+        //    $this->respond_to_error("Invalid score", array("#show", 'id' => $this->params()->id, 'tag_title' => $p->tag_title(), 'status' => 424));
+        //    return;
+        //}
 
         $vote_successful = $p->vote($score, current_user());
 
-        $api_data = Post::batch_api_data(array($p));
-        $api_data['voted_by'] = $p->voted_by();
+        // there is no reason to return all of this data; the client likely doesn't care
+        // and can use /post/index or /post/show if they do actually want the post data
+        //$api_data = Post::batch_api_data(array($p));
+        //$api_data['voted_by'] = $p->voted_by();
+        $api_data = ['success' => (bool)$vote_successful];
 
         if ($vote_successful)
             $this->respond_to_success("Vote saved", array("#show", 'id' => $this->params()->id, 'tag_title' => $p->tag_title()), array('api' => $api_data));
