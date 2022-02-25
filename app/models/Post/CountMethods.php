@@ -6,9 +6,9 @@ trait PostCountMethods
         # A small sanitation
         $tags = preg_replace('/ +/', ' ', trim($tags));
         $cache_version = (int)Rails::cache()->read('$cache_version');
-        $key = ['post_count' => hash('sha256', $tags, false), 'v' => $cache_version];
+        $key = ['post_count' => hash('fnv164', $tags, false), 'v' => $cache_version];
 
-        $count = (int)Rails::cache()->fetch($key, function() use ($tags) {
+        $count = (int)Rails::cache()->fetch($key, ['expires_in' => '1 day'], function() use ($tags) {
             list($sql, $params) = Post::generate_sql($tags, ['count' => true]);
             array_unshift($params, $sql);
             return Post::countBySql($params);

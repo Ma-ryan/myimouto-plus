@@ -8,7 +8,7 @@ trait CacheMethods
 {
     protected function update_cache()
     {
-        Rails::cache()->write(['tag_type' => $this->name], self::type_name_from_value($this->tag_type));
+        Rails::cache()->write(['tag_type' => $this->name], self::type_name_from_value($this->tag_type), ['expires_in' => '1 day']);
         
         # Expire the tag cache if a tag's type changes.
         if ($this->tag_type != $this->tagTypeWas()) {

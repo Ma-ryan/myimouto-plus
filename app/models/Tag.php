@@ -499,7 +499,7 @@ class Tag extends Rails\ActiveRecord\Base
         
         !is_array($tags) && $tags = array($tags);
         
-        return Rails::cache()->fetch(['category' => 'reltags', 'tags' => hash('sha256', implode(',', $tags), false)], ['expires_in' => '1 hour'], function() use ($tags) {
+        return Rails::cache()->fetch(['category' => 'reltags', 'tags' => hash('fnv164', implode(',', $tags), false)], ['expires_in' => '1 hour'], function() use ($tags) {
             $from = array("posts_tags pt0");
             $cond = array("pt0.post_id = pt1.post_id");
             $sql = "SELECT ";
