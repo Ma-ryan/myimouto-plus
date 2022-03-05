@@ -4,19 +4,13 @@ abstract class Post_ImageStore_Base
     protected $_post;
     
     abstract public function file_path();
-
     abstract public function file_url();
     
     abstract public function preview_path();
-
     abstract public function sample_path();
-
     abstract public function preview_url();
-
     abstract public function jpeg_path();
-
     abstract public function store_jpeg_url();
-
     abstract public function store_sample_url();
     
     static public function create_instance(Post $post)
@@ -38,12 +32,11 @@ abstract class Post_ImageStore_Base
         
         return $object;
     }
-
     public function delete_file()
     {
         if (is_file($this->file_path()))
             @unlink($this->file_path());
-        if ($this->_post->image()) {
+        if ($this->_post->image() or $this->_post->video()) {
             if (file_exists($this->preview_path()))
                 @unlink($this->preview_path());
             if (file_exists($this->sample_path()))
@@ -52,7 +45,6 @@ abstract class Post_ImageStore_Base
                 @unlink($this->jpeg_path());
         }
     }
-
     public function move_file()
     {
         $this->_create_dirs($this->file_path());
@@ -63,19 +55,16 @@ abstract class Post_ImageStore_Base
             move_uploaded_file($this->_post->tempfile_path(), $this->file_path());
         
         // chmod($this->file_path(), 0777);
-
-        if ($this->_post->image()) {
+        if ($this->_post->image() or $this->_post->video()) {
             $this->_create_dirs($this->preview_path());
             rename($this->_post->tempfile_preview_path(), $this->preview_path());
             // chmod($this->preview_path(), 0777);
         }
-
         if (file_exists($this->_post->tempfile_sample_path())) {
             $this->_create_dirs($this->sample_path());
             rename($this->_post->tempfile_sample_path(), $this->sample_path());
             // chmod($this->sample_path(), 0777);
         }
-
         if (file_exists($this->_post->tempfile_jpeg_path())) {
             $this->_create_dirs($this->jpeg_path());
             rename($this->_post->tempfile_jpeg_path(), $this->jpeg_path());
