@@ -50,16 +50,7 @@ class TagSubscription extends Rails\ActiveRecord\Base
 
     static public function find_post_ids($user_id, $name = null, $limit = null)
     {
-        if (!$limit) { $limit = CONFIG()->tag_subscription_post_limit; }
-
-        $sub = self::select('tag_query')->where(['user_id' => $user_id, 'name' => $name])->first();
-        $tags = $sub ? $sub->tag_query : '';
-
-        $q = Tag::parse_query($tags);
-        list ($sql, $params) = Post::generate_sql($q, ['original_query' => $tags, 'order' => "p.id DESC", 'limit' => $limit]);
-
-        $ids = [];
-        $posts = Post::findBySql($sql, $params);
+        $posts = self::find_posts($user_id, $name, $limit);
         foreach ($posts as $post) { $ids[] = $post->id; }
         return $ids;
     }
