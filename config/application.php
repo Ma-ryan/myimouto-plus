@@ -29,5 +29,8 @@ class Application extends \Rails\Application\Base
         $config->plugins = [
             'Rails\WillPaginate'
         ];
+
+        // uncomment below to use APCu with changes to railsphp
+        // $config->cache_store = ['apcu_store', 'MyImouto'];
     }
 }

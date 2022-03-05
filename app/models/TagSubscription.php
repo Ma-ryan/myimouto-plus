@@ -50,32 +50,22 @@ class TagSubscription extends Rails\ActiveRecord\Base
 
     static public function find_post_ids($user_id, $name = null, $limit = null)
     {
-        if (!$limit) {
-            $limit = CONFIG()->tag_subscription_post_limit;
-        }
-
-        $post_ids = self::select('cached_post_ids')->where(['user_id' => $user_id]);
-        if ($name) {
-            $post_ids->where('name LIKE ?', $name . '%');
-        }
-        $post_ids = $post_ids->take();
-
-        $parsed_ids = [];
-        foreach ($post_ids as $subs) {
-            $ids = explode(',', $subs->cached_post_ids);
-            foreach ($ids as &$id) {
-                $id = (int)$id;
-            }
-            $parsed_ids = array_merge($parsed_ids, $ids);
-        }
-        sort($parsed_ids);
-
-        return array_slice(array_reverse(array_unique($parsed_ids)), 0, $limit);
+        $posts = self::find_posts($user_id, $name, $limit);
+        foreach ($posts as $post) { $ids[] = $post->id; }
+        return $ids;
     }
 
     static public function find_posts($user_id, $name = null, $limit = null)
     {
-        return Post::available()->where('id IN (?)', self::find_post_ids($user_id, $name, $limit))->order('id DESC')->take();
+        if (!$limit) { $limit = CONFIG()->tag_subscription_post_limit; }
+
+        $sub = self::select('tag_query')->where(['user_id' => $user_id, 'name' => $name])->first();
+        $tags = $sub ? $sub->tag_query : '';
+
+        $q = Tag::parse_query($tags);
+        list ($sql, $params) = Post::generate_sql($q, ['original_query' => $tags, 'order' => "p.id DESC", 'limit' => $limit]);
+
+        return Post::findBySql($sql, $params);
     }
 
     static public function process_all()

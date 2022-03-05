@@ -187,7 +187,7 @@ class User extends Rails\ActiveRecord\Base
 
     static public function find_name($user_id)
     {
-        return Rails::cache()->fetch('user_name:' . $user_id, function() use ($user_id) {
+        return Rails::cache()->fetch('user_name:' . $user_id, ['expires_in' => '1 day'], function() use ($user_id) {
             try {
                 return self::find($user_id)->name;
             } catch (Rails\ActiveRecord\Exception\RecordNotFoundException $e) {
@@ -213,7 +213,7 @@ class User extends Rails\ActiveRecord\Base
 
     protected function update_cached_name()
     {
-        Rails::cache()->write("user_name:".$this->id, $this->name);
+        Rails::cache()->write("user_name:".$this->id, $this->name, ['expires_in' => '1 day']);
     }
     # }
 
@@ -388,7 +388,7 @@ class User extends Rails\ActiveRecord\Base
         $version = (int)Rails::cache()->read('$cache_version');
         $key = 'held-post-count/v=' . $version . '/u=' . $this->id;
         
-        return Rails::cache()->fetch($key, function() {
+        return Rails::cache()->fetch($key, ['expires_in' => '1 day'], function() {
             return Post::where(['user_id' => $this->id, 'is_held' => true])->where('status <> ?', 'deleted')->count();
         });
     }
