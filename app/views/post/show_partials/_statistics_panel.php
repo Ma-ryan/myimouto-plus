@@ -1,9 +1,12 @@
 <div id="stats" class="vote-container">
   <h5><?= $this->t('.title') ?></h5>
   <ul>
+    <?php if ($this->post->user and $this->post->user->has_avatar()) : ?>
+      <div class="comment-avatar-container"> <?= $this->avatar($this->post->user, $this->post->id) ?>
+    <?php endif ?>
     <li><?= $this->t('.id') ?>: <?= $this->post->id ?></li>
     <li><?= $this->t('.posted') ?>: <?= $this->t(['.posted_data_html', 'time' => $this->linkTo($this->t(['time.x_ago', 't' => $this->timeAgoInWords($this->post->created_at)]), ["#index", 'tags' => "date:" . substr($this->post->created_at, 0, 10)], ['title' => substr(date('r', strtotime($this->post->created_at)), 0, -6)]), 'user' => $this->linkToIf($this->post->user_id, $this->h($this->post->author()), ['user#show', 'id' => $this->post->user_id])]) ?></li>
-    <?php if (current_user()->is_admin() && $this->post->approver) : ?>
+    <?php if (current_user()->is_member_or_higher() && $this->post->approver) : ?>
       <li><?= $this->t('.approver') ?>: <?= $this->post->approver->name ?></li>
     <?php endif ?>
     <?php if ($this->post->image() or $this->post->video()) : ?>
@@ -35,8 +38,6 @@
   var widget = new VoteWidget($("stats"));
   widget.set_post_id(<?= $this->post->id ?>);
   widget.init_hotkeys();
-
   Post.init_add_to_favs(<?= $this->post->id ?>, $("add-to-favs"), $("remove-from-favs"));
 </script>
 <?php }) ?>
-
