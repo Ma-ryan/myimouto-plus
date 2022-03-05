@@ -5,7 +5,6 @@ class Post_ImageStore_LocalHierarchy extends Post_ImageStore_Base
     {
         return Rails::root() . "/public/data/image/" . $this->_file_hierarchy() . "/" . $this->_post->file_name();
     }
-
     public function file_url()
     {
         if (current_user()->download_name)
@@ -18,32 +17,28 @@ class Post_ImageStore_LocalHierarchy extends Post_ImageStore_Base
     
     public function preview_path()
     {
-        if ($this->_post->image())
+        if ($this->_post->image() or $this->_post->video())
             return Rails::root() . "/public/data/preview/" . $this->_file_hierarchy() . "/" .$this->_post->md5.".jpg";
         else
             return Rails::root() . "/public/download-preview.png";
     }
-
     public function sample_path()
     {
         return Rails::root() . "/public/data/sample/" . $this->_file_hierarchy() . "/" . CONFIG()->sample_filename_prefix . $this->_post->md5 . ".jpg";
     }
-
     public function preview_url()
     {
         if ($this->_post->status == "deleted")
             return CONFIG()->url_base . "/deleted-preview.png";
-        elseif ($this->_post->image())
+        elseif ($this->_post->image() or $this->_post->video())
             return CONFIG()->url_base . "/data/preview/".$this->_post->md5.".jpg";
         else
             return CONFIG()->url_base . "/download-preview.png";
     }
-
     public function jpeg_path()
     {
         return Rails::root() . "/public/data/jpeg/".$this->_file_hierarchy()."/".$this->_post->md5.".jpg";
     }
-
     public function store_jpeg_url()
     {
          if (CONFIG()->use_pretty_image_urls) {
@@ -52,7 +47,6 @@ class Post_ImageStore_LocalHierarchy extends Post_ImageStore_Base
             return CONFIG()->url_base . "/data/jpeg/".$this->_post->md5.".jpg";
         }
     }
-
     public function store_sample_url()
     {
          if (CONFIG()->use_pretty_image_urls) {
@@ -60,7 +54,6 @@ class Post_ImageStore_LocalHierarchy extends Post_ImageStore_Base
         } else {
             $path = "/data/sample/" . CONFIG()->sample_filename_prefix . $this->_post->md5.".jpg";
         }
-
         return CONFIG()->url_base . $path;
     }
 }
