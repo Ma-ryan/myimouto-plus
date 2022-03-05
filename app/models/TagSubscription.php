@@ -65,7 +65,6 @@ class TagSubscription extends Rails\ActiveRecord\Base
         $q = Tag::parse_query($tags);
         list ($sql, $params) = Post::generate_sql($q, ['original_query' => $tags, 'order' => "p.id DESC", 'limit' => $limit]);
 
-        $ids = [];
         return Post::findBySql($sql, $params);
     }
 
