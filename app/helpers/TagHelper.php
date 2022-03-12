@@ -96,10 +96,19 @@ class TagHelper extends Rails\ActionView\Helper
             else
                 $html .= '<a href="/wiki/show?title=' . $this->u($name) . '">?</a> ';
             
-            if (current_user()->is_privileged_or_higher()) {
-                $html .= '<a href="/post?tags=' . $this->u($name) . '+' . $this->u($this->params()->tags) . '" class="no-browser-link">+</a> ';
-                $html .= '<a href="/post?tags=-' . $this->u($name) . '+' .$this->u($this->params()->tags) . '" class="no-browser-link">&ndash;</a> ';
-            }
+            // I don't know why this feature should be restricted to privileged or higher...
+            // if (current_user()->is_privileged_or_higher()) {
+                $ptags = $ntags = explode(' ', $this->params()->tags);
+                $included = in_array($name, $ptags);
+                $excluded = in_array("-$name", $ptags);
+                if ($excluded) { $ptags = array_diff($ptags, ["-$name"]); }
+                else if (!$included) { $ptags[] = $name; }
+                if ($included) { $ntags = array_diff($ntags, [$name]); }
+                else if (!$excluded) { $ntags[] = "-$name"; }
+
+                $html .= '<a href="/post?tags=' . $this->u(implode(' ', $ptags)) . '" class="no-browser-link">+</a> ';
+                $html .= '<a href="/post?tags=' . $this->u(implode(' ', $ntags)) . '" class="no-browser-link">&ndash;</a> ';
+            // }
             
             if (!empty($options['with_hover_highlight'])) {
                 $mouseover = ' onmouseover="Post.highlight_posts_with_tag(\'' . $this->escapeJavascript($name) . '\')"';

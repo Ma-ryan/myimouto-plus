@@ -63,7 +63,10 @@ class PostHelper extends Rails\ActionView\Helper
         $image = '<img src="'.$post->preview_url().'" style="margin-left: '.$crop_left*(-1).'px;" alt="'.$image_title.'" class="'.$image_class.'" title="'.$image_title.'" '.$image_id.' width="'.$width.'" height="'.$height.'">';
         if ($is_post) {
             $plid = '<span class="plid">#pl http://'.CONFIG()->server_host.'/post/show/'.$post->id.'</span>';
-            $target_url = '/post/show/' . $post->id . '/' . $post->tag_title() . $options['url_params'];
+            $target_url = "/post/show/" . $post->id;
+            if (CONFIG()->use_pretty_image_urls) { $target_url .= '/' . $post->tag_title(); }
+            $ctags = urlencode($this->params()->tags);
+            if ($ctags) { $target_url .= '?tags=' . $ctags; }
         } else {
             $plid = "";
             $target_url = $post->url;

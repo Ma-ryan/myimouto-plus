@@ -149,7 +149,7 @@ trait PostFileMethods
                 ? $this->pretty_file_name() . '.' . $this->file_ext
                 : $this->file_name();
         } else {
-            $tags = !strpos($name, '{TAGS}') ? ''
+            $tags = strpos($name, '{TAGS}') === false ? ''
                 : str_replace(['/', '?'], ['_', ''], Tag::compact_tags($this->cached_tags, 150));
 
             $name = str_replace(
