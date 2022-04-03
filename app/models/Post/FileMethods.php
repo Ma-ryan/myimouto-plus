@@ -149,12 +149,39 @@ trait PostFileMethods
                 ? $this->pretty_file_name() . '.' . $this->file_ext
                 : $this->file_name();
         } else {
-            $tags = strpos($name, '{TAGS}') === false ? ''
-                : str_replace(['/', '?'], ['_', ''], Tag::compact_tags($this->cached_tags, 150));
+
+            $artTags = '';
+            $copyTags = '';
+            $charTags = '';
+            $circTags = '';
+
+            $tags = $this->cached_tags;
+            $ptags = strpos($name, '{TAGS}') === false ? ''
+                : str_replace(['/', '?'], ['_', ''], Tag::compact_tags($tags, 150));
+
+            if (strpos($name, '{TAGS:') !== false)
+            {
+                $tags = Tag::where("name in (?)", explode(' ', $tags));
+                $tags = $tags->select("tag_type, name")->take()->toArray();
+                foreach ($tags as $tag)
+                {
+                    if ($tag->tag_type == 1) { $artTags .= $tag->name . ' '; }
+                    else if ($tag->tag_type == 3) { $copyTags .= $tag->name . ' '; }
+                    else if ($tag->tag_type == 4) { $charTags .= $tag->name . ' '; }
+                    else if ($tag->tag_type == 4) { $circTags .= $tag->name . ' '; }
+                }
+
+                $artTags = str_replace(['/', '?'], ['_', ''], Tag::compact_tags(trim($artTags), 100));
+                $copyTags = str_replace(['/', '?'], ['_', ''], Tag::compact_tags(trim($copyTags), 100));
+                $charTags = str_replace(['/', '?'], ['_', ''], Tag::compact_tags(trim($charTags), 100));
+                $circTags = str_replace(['/', '?'], ['_', ''], Tag::compact_tags(trim($circTags), 100));
+            }
 
             $name = str_replace(
-                ['{ID}', '{MD5}', '{WIDTH}', '{HEIGHT}', '{SIZE}', '{TAGS}'],
-                [$this->id, $this->md5, $this->width, $this->height, $this->file_size, $tags],
+                ['{ID}', '{MD5}', '{WIDTH}', '{HEIGHT}', '{SIZE}', '{TAGS}',
+                    '{R}', '{RATING}', '{TAGS:ART}', '{TAGS:COPY}', '{TAGS:CHAR}', '{TAGS:CIRC}'],
+                [$this->id, $this->md5, $this->width, $this->height, $this->file_size, $ptags,
+                    $this->rating, $this->pretty_rating(), $artTags, $copyTags, $charTags, $circTags],
                 $name) . '.' . $this->file_ext;
         }
 
