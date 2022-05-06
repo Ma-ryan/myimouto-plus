@@ -485,6 +485,79 @@ abstract class DefaultConfig
         return null;
     }
 
+
+    /**
+     * Called when saving post tags to the database.
+     * Place code here to force certain post tags to be added or removed.
+     */
+    public function on_commit_tags_hook($post)
+    {
+        // tags to force add
+        $include = [];
+
+        // tags to force remove - note that aliases are processed after this so these
+        // tags will still be added if the post has other tags that alias these tags
+        $exclude =
+        [
+            'useless_tags',
+            'safe',
+            'questionable',
+            'explicit',
+            'loli',
+            'female',
+            // ... add more here ...
+        ];
+
+        $width = $post->width;
+        $height = $post->height;
+        $aspect = $width / (float)$height;
+
+        if ($width <= 500 && $height <= 500)
+        {
+            $include[] = 'lowres';
+            $exclude[] = 'highres';
+            $exclude[] = 'absurdres';
+            $exclude[] = 'incredibly_absurdres';
+        }
+        else if ($width >= 1600 || $height >= 1200)
+        {
+            $exclude[] = 'lowres';
+            $include[] = 'highres';
+
+            if ($width >= 3200 || $height >= 2400)
+            {
+                $include[] = 'absurdres';
+
+                if ($width >= 10000 || $height >= 10000)
+                {
+                    $include[] = 'incredibly_absurdres';
+                }
+            }
+        }
+
+        if ($width >= 1024 && $aspect >= 4.0) { $include[] = 'wide_image'; }
+        else { $exclude[] = 'wide_image'; }
+
+        if ($height >= 1024 && $aspect <= 0.25) { $include[] = 'tall_image'; }
+        else { $exclude[] = 'tall_image'; }
+
+        $ext = $post->file_ext;
+        $video = false;
+        if ($ext != 'gif') { $exclude[] = 'gif'; }
+        if ($ext != 'png') { $exclude[] = 'animated_png'; }
+        if ($ext == 'swf') { $include[] = 'flash'; } else { $exclude[] = 'flash'; }
+        if ($ext == 'webm') { $video = true; $include[] = 'webm'; } else { $exclude[] = 'webm'; }
+        if ($ext == 'mp4') { $video = true; $include[] = 'mp4'; } else { $exclude[] = 'mp4'; }
+        if ($video) { $include[] = 'video'; } else { $exclude[] = 'video'; }
+
+        if ($post->file_size >= 10485760) { $include[] = 'huge_filesize'; }
+        else { $exclude[] = 'huge_filesize'; }
+
+        $post->new_tags = array_merge($post->new_tags, $include);
+        $post->new_tags = array_diff($post->new_tags, $exclude);
+    }
+
+
     # Just enabling tasks won't assure a certain task is active.
     # This will tell us if job tasks are enabled and if a specific task is active.
     public function is_job_task_active($name)
