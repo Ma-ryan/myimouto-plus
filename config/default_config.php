@@ -553,8 +553,8 @@ abstract class DefaultConfig
         if ($post->file_size >= 10485760) { $include[] = 'huge_filesize'; }
         else { $exclude[] = 'huge_filesize'; }
 
-        $post->new_tags = array_merge($post->new_tags, $include);
         $post->new_tags = array_diff($post->new_tags, $exclude);
+        $post->new_tags = array_merge($post->new_tags, $include);
     }
 
 
