@@ -20,6 +20,8 @@ trait PostSqlMethods
 
     static public function generate_sql_range_helper($arr, $field, &$c, &$params = null)
     {
+        if ($arr == null) { return; }
+
         $query_passed = is_object($c);
         
         switch ($arr[0]) {

@@ -190,10 +190,10 @@ trait PostTagMethods
      */
     protected function commit_tags()
     {
-        CONFIG()->on_commit_tags_hook($this);
-
         if ($this->isNewRecord() || !$this->new_tags)
             return;
+
+        CONFIG()->on_commit_tags_hook($this);
         
         if ($this->old_tags) {
             # If someone else committed changes to this post before we did,
