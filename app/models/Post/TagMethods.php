@@ -190,6 +190,8 @@ trait PostTagMethods
      */
     protected function commit_tags()
     {
+        CONFIG()->on_commit_tags_hook($this);
+
         if ($this->isNewRecord() || !$this->new_tags)
             return;
         
