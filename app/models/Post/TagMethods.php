@@ -192,8 +192,6 @@ trait PostTagMethods
     {
         if ($this->isNewRecord() || !$this->new_tags)
             return;
-
-        CONFIG()->on_commit_tags_hook($this);
         
         if ($this->old_tags) {
             # If someone else committed changes to this post before we did,
@@ -311,6 +309,9 @@ trait PostTagMethods
                 return;
             $this->new_tags[] = "tagme";
         }
+
+        // this must be below metatag processing else it causes problems
+        CONFIG()->on_commit_tags_hook($this);
         
         // $this->tags = implode(' ', array_unique(TagImplication::with_implied(TagAlias::to_aliased($this->new_tags))));
         $this->new_tags = TagAlias::to_aliased($this->new_tags);
