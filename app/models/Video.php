@@ -130,11 +130,17 @@ class Video
             $stderr .= stream_get_contents($pipes[2]);
         }
 
-        if ($status['running']) { proc_terminate($proc); return false; }
+        if ($status['running'])
+        {
+            proc_terminate($proc);
+            proc_close($proc);
+            return false;
+        }
 
         $code = $status['exitcode'];
         $stdout .= stream_get_contents($pipes[1]);
         $stderr .= stream_get_contents($pipes[2]);
+        proc_close($proc);
         return true;
     }
 
