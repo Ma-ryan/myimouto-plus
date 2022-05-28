@@ -9,7 +9,6 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "codescale/ffmpeg-php": "dev-master",
         "railsphp/railsphp": "1.0.*",
         "railsphp/willpaginate": "1.0.*",
         "railsphp/actsasversioned": "1.0.*",
