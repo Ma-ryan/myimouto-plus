@@ -21,7 +21,7 @@ class Video
 
 
 
-    public function probe() : void
+    public function probe()
     {
         if ($this->probed) { return; }
 
@@ -74,7 +74,7 @@ class Video
     }
 
 
-    public function createPreview(string $path, int $width = null, int $height = null) : void
+    public function createPreview(string $path, int $width = null, int $height = null)
     {
         $this->probe();
 
