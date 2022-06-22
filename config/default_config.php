@@ -534,6 +534,13 @@ abstract class DefaultConfig
                 }
             }
         }
+        else // normal resolution
+        {
+            $exclude[] = 'lowres';
+            $exclude[] = 'highres';
+            $exclude[] = 'absurdres';
+            $exclude[] = 'incredibly_absurdres';
+        }
 
         if ($width >= 1024 && $aspect >= 4.0) { $include[] = 'wide_image'; }
         else { $exclude[] = 'wide_image'; }

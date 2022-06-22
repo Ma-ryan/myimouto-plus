@@ -1,4 +1,6 @@
 <?php
+
+
 # These are methods dealing with getting the image and generating the thumbnail.
 # It works in conjunction with the image_store methods. Since these methods have
 # to be called in a specific order, they've been bundled into one module.
@@ -15,6 +17,7 @@ trait PostFileMethods
         'application/x-shockwave-flash' => 'swf',
         'video/webm' => 'webm',
         'video/mp4'  => 'mp4',
+        'video/x-m4v' => 'mp4',
     ];
     
     /**
@@ -362,15 +365,8 @@ trait PostFileMethods
             return false;
         }
         
-        $this->tempfile_name = pathinfo($this->tempfile_name, PATHINFO_FILENAME);
-        
-        //list ($x, $y, $type) = getimagesize($this->tempfile_path());
-        list ($x, $y) = getimagesize($this->tempfile_path());
-        
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $this->mime_type = finfo_file($finfo, $this->tempfile_path());
-        //$this->mime_type = image_type_to_mime_type($type);
-        finfo_close($finfo);
+        $this->mime_type = mime_content_type($this->tempfile_path());
+        if (!$this->mime_type) { $this->mime_type = "application/octet-stream"; }
     }
     
     # Assigns a CGI file to the post. This writes the file to disk and generates a unique file name.
@@ -394,7 +390,7 @@ trait PostFileMethods
             list($this->width, $this->height) = getimagesize($this->tempfile_path());
         }
 	elseif ($this->video()){
-	    $video = new FFmpegMovie($this->tempfile_path());
+	    $video = new Video($this->tempfile_path());
 	    $this->width = $video->getFrameWidth();
             $this->height = $video->getFrameHeight();
 	}
@@ -575,8 +571,8 @@ trait PostFileMethods
             return false;
         if ($this->video()){
             try {
-	        $video = new FFmpegMovie($this->tempfile_path());
-                $video->getFrameAtTime(0, $size['width'], $size['height'], '', $this->tempfile_preview_path());
+	        $video = new Video($this->tempfile_path());
+                $video->createPreview($this->tempfile_preview_path(), $size['width'], $size['height']);
             } catch (Exception $e) {
                 $this->errors()->add("preview", "couldn't be generated (".$e->getMessage().")");
                 $this->delete_tempfile();

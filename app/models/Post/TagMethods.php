@@ -190,8 +190,6 @@ trait PostTagMethods
      */
     protected function commit_tags()
     {
-        CONFIG()->on_commit_tags_hook($this);
-
         if ($this->isNewRecord() || !$this->new_tags)
             return;
         
@@ -262,7 +260,7 @@ trait PostTagMethods
                             $pool = Pool::create(array('name' => $name, 'is_public' => false, 'user_id' => $this->updater_user_id));
                         
                         if (!$pool || !$pool->can_change(current_user(), null))
-                            continue;
+                            continue 2;
                         
                         $pool->add_post($this->id, $options);
                         
@@ -311,6 +309,9 @@ trait PostTagMethods
                 return;
             $this->new_tags[] = "tagme";
         }
+
+        // this must be below metatag processing else it causes problems
+        CONFIG()->on_commit_tags_hook($this);
         
         // $this->tags = implode(' ', array_unique(TagImplication::with_implied(TagAlias::to_aliased($this->new_tags))));
         $this->new_tags = TagAlias::to_aliased($this->new_tags);
