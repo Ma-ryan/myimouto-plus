@@ -365,8 +365,18 @@ trait PostFileMethods
             return false;
         }
         
-        $this->mime_type = mime_content_type($this->tempfile_path());
+        $path = $this->tempfile_path();
+        $this->mime_type = mime_content_type($path);
         if (!$this->mime_type) { $this->mime_type = "application/octet-stream"; }
+
+        // HACK: PHP's mime data does not recognize ftypiso5 mp4
+        if ($this->mime_type == "application/octet-stream")
+        {
+            $file = fopen($path, "rb");
+            $header = fread($file, 12);
+            fclose($file);
+            if (substr($header, 4) == 'ftypiso5') { $this->mime_type = 'video/mp4'; }
+        }
     }
     
     # Assigns a CGI file to the post. This writes the file to disk and generates a unique file name.
