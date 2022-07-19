@@ -53,7 +53,8 @@ class TagController extends ApplicationController
     {
         $this->set_title('Tags');
 
-        $limit = max(1, min(1000, intval($this->params()->limit ?? "50")));
+        $limit = min(1000, intval($this->params()->limit ?? "50"));
+        if ($limit < 1) { $limit = 50; }
         
 
         switch ($this->params()->order) {
