@@ -52,13 +52,10 @@ class TagController extends ApplicationController
     public function index()
     {
         $this->set_title('Tags');
+
+        $limit = min(1000, intval($this->params()->limit ?? "50"));
+        if ($limit < 1) { $limit = 50; }
         
-        if ($this->params()->limit === "0")
-            $limit = null;
-        elseif (!$this->params()->limit)
-            $limit = 50;
-        else
-            $limit = (int)$this->params()->limit;
 
         switch ($this->params()->order) {
             case "name":
