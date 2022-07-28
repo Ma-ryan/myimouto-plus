@@ -50,7 +50,7 @@ class Video
         $this->height = intval($stream['height']) ?? 0;
         $this->nbframes = intval($stream['nb_frames']) ?? 0;
 
-        if ($this->width <= 0 || $this->height <= 0 || $this->nbframes <= 0)
+        if ($this->width <= 0 || $this->height <= 0)
         {
             throw new \Exception("missing video frame information");
         }
@@ -81,7 +81,7 @@ class Video
         if ($width === null) { $width = $this->width; }
         if ($height === null) { $height = $this->height; }
 
-        $frame = min(10, $this->nbframes - 1);
+        $frame = min(10, max($this->nbframes - 1, 0));
         $scaled = !($this->width === $width && $this->height === $height);
 
         $cmd = "ffmpeg -y -i " . escapeshellarg($this->file) . " -vf \"";
