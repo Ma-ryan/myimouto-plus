@@ -481,8 +481,7 @@ class PostController extends ApplicationController
         $cfg = CONFIG();
         $url = $cfg->url_base;
         $utc = new DateTimeZone('UTC');
-        $tfmt = 'Y-m-d\\TG:i:s\\Z';
-        $id = 'tag:' . $cfg->app_name . ',2:';
+        $id = 'tag:' . $cfg->app_name . ':';
 
         $xw = new XMLWriter();
         $xw->openMemory();
@@ -509,9 +508,7 @@ class PostController extends ApplicationController
         $xw->writeElement('title', $cfg->app_name);
 
         $posts = $this->posts->members();
-        $ts = new DateTime('now');
-        $ts->setTimeZone($utc);
-        $updated = $ts->format($tfmt);
+        $updated = (new DateTime('now'))->format('c');
         $xw->writeElement('updated', $updated);
 
         foreach ($posts as $post)
@@ -542,9 +539,7 @@ class PostController extends ApplicationController
 
             $xw->startElement('entry');
             $xw->writeElement('id', "$id/post/{$post->id}");
-            $ts = new DateTime($post->created_at);
-            $ts->setTimeZone($utc);
-            $published = $ts->format($tfmt);
+            $published = (new DateTime($post->created_at))->format('c');
             $xw->writeElement('published', $published);
             $xw->writeElement('updated', $published);
 
@@ -578,27 +573,6 @@ class PostController extends ApplicationController
 
         $xw->endElement();
         echo $xw->outputMemory();
-        
-
-        /*
-        $dom = new DOMDocument('1.0', 'UTF-8');
-        $root = $dom->appendChild($dom->createElementNS('http://www.w3.org/2005/Atom', 'feed'));
-        $root->setAttribute('count', $this->posts->totalRows());
-        $root->setAttribute('offset', ($this->posts->currentPage() - 1) * $this->posts->perPage());
-
-        foreach ($this->posts as $post)
-        {
-            $pel = $root->appendChild($dom->createElement('post'));
-
-            foreach ($post->api_attributes() as $key => $value)
-            {
-                if (!isset($value) || is_array($value)) { continue; }
-                if (is_bool($value)) { $value = $value ? 'true' : 'false'; }
-                $pel->setAttribute($key, strval($value));
-            }
-        }
-        */
-
         exit;
     }
 
