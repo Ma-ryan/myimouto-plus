@@ -437,6 +437,8 @@ class PostController extends ApplicationController
 
         $this->set_client_cache('private', $tags == '' ? CONFIG()->index_client_cache : CONFIG()->search_client_cache);
 
+        if ($this->params()->format == "atom") { $this->renderAtom(); }
+
 // exit;
         $this->respondTo(array(
             'html' => function() use ($split_tags, $tags) {
@@ -465,11 +467,141 @@ class PostController extends ApplicationController
                 ));
 
                 $this->render(array('json' => json_encode($api_data)));
-            }
-            // ,
-            // 'atom'
+            },
         ));
     }
+
+
+    private function renderAtom()
+    {
+        // HACK: railsphp does not support atom and does not support
+        // custom content-type so we are bypassing rails completely here
+        header('Content-Type: application/atom+xml; charset=utf-8');
+        
+        $cfg = CONFIG();
+        $url = $cfg->url_base;
+        $utc = new DateTimeZone('UTC');
+        $tfmt = 'Y-m-d\\TG:i:s\\Z';
+        $id = 'tag:' . $cfg->app_name . ',2:';
+
+        $xw = new XMLWriter();
+        $xw->openMemory();
+        $xw->setIndent(true);
+        $xw->startDocument('1.0', 'UTF-8');
+        $xw->endDocument();
+        $xw->startElement('feed');
+        $xw->writeAttribute('xml:lang', 'en-US');
+        $xw->writeAttribute('xmlns', 'http://www.w3.org/2005/Atom');
+        $xw->writeElement('id', "$id/post.atom");
+
+        $xw->startElement('link');
+        $xw->writeAttribute('rel', 'alternate');
+        $xw->writeAttribute('type', 'text/html');
+        $xw->writeAttribute('href', "$url/post");
+        $xw->endElement();
+
+        $xw->startElement('link');
+        $xw->writeAttribute('rel', 'self');
+        $xw->writeAttribute('type', 'application/atom+xml');
+        $xw->writeAttribute('href', "$url/post.atom");
+        $xw->endElement();
+
+        $xw->writeElement('title', $cfg->app_name);
+
+        $posts = $this->posts->members();
+        $ts = new DateTime('now');
+        $ts->setTimeZone($utc);
+        $updated = $ts->format($tfmt);
+        $xw->writeElement('updated', $updated);
+
+        foreach ($posts as $post)
+        {
+            $author = $post->author();
+            $preview = $post->preview_url();
+            $file = $post->file_url();
+            $rating = $post->pretty_rating();
+
+            $artists = [];
+            $copyrights = [];
+            $circles = [];
+            $characters = [];
+            $general = [];
+            $tags = Tag::where("name in (?)", $post->tags());
+            $tags = $tags->select("tag_type, name")->take()->toArray();
+            foreach ($tags as $tag)
+            {
+                if ($tag->tag_type == 1) { $artists[] = $tag->name; }
+                else if ($tag->tag_type == 3) { $copyrights[] = $tag->name; }
+                else if ($tag->tag_type == 4) { $characters[] = $tag->name; }
+                else if ($tag->tag_type == 5) { $circles[] = $tag->name; }
+                else { $general[] = $tag->name; }
+            }
+
+            $ptags = array_merge($artists, $copyrights, $circles, $characters, $general);
+            $stags = implode(' ', array_slice($ptags, 0, 5));
+
+            $xw->startElement('entry');
+            $xw->writeElement('id', "$id/post/{$post->id}");
+            $ts = new DateTime($post->created_at);
+            $ts->setTimeZone($utc);
+            $published = $ts->format($tfmt);
+            $xw->writeElement('published', $published);
+            $xw->writeElement('updated', $published);
+
+            $xw->startElement('link');
+            $xw->writeAttribute('rel', 'alternate');
+            $xw->writeAttribute('type', 'text/html');
+            $xw->writeAttribute('href', "$url/post/show/{$post->id}");
+            $xw->endElement();
+
+            $xw->startElement('link');
+            $xw->writeAttribute('rel', 'enclosure');
+            $xw->writeAttribute('href', $file);
+            $xw->endElement();
+
+            $title = "Post #{$post->id} [$rating] - $stags";
+            $xw->writeElement('title', $title);
+            $xw->writeElement('summary', $title);
+
+            $xw->startElement('content');
+            $xw->writeAttribute('type', 'html');
+            $xw->text("<a href=\"$url/post/show/{$post->id}\"><img alt=\"Post #{$post->id}\" src=\"$preview\"></a>");
+            $xw->endElement();
+
+            $xw->startElement('author');
+            $xw->writeElement('name', $author);
+            $xw->writeElement('uri', "$url/user/show/{$post->user_id}");
+            $xw->endElement();
+
+            $xw->endElement();
+        }
+
+        $xw->endElement();
+        echo $xw->outputMemory();
+        
+
+        /*
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $root = $dom->appendChild($dom->createElementNS('http://www.w3.org/2005/Atom', 'feed'));
+        $root->setAttribute('count', $this->posts->totalRows());
+        $root->setAttribute('offset', ($this->posts->currentPage() - 1) * $this->posts->perPage());
+
+        foreach ($this->posts as $post)
+        {
+            $pel = $root->appendChild($dom->createElement('post'));
+
+            foreach ($post->api_attributes() as $key => $value)
+            {
+                if (!isset($value) || is_array($value)) { continue; }
+                if (is_bool($value)) { $value = $value ? 'true' : 'false'; }
+                $pel->setAttribute($key, strval($value));
+            }
+        }
+        */
+
+        exit;
+    }
+
 
     // private function is_mobile_browser()
     // {
@@ -485,13 +617,10 @@ class PostController extends ApplicationController
         // return false;
     // }
 
-    // public function atom()
-    // {
-        // $this->posts = Post.findBySql(Post.generate_sql($this->params()->tags, 'limit' => 20, 'order' => "p.id DESC"))
-        // $this->respondTo(array(
-            // format.atom { render 'index' }
-        // ));
-    // }
+    public function atom()
+    {
+        $this->redirectTo(["/post.atom"]);
+    }
 
     // public function piclens()
     // {
@@ -587,7 +716,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring ' . $this->period_name);
 
-        $this->posts = Post::where("status <> 'deleted' AND posts.index_timestamp >= ? AND posts.index_timestamp <= ? ", date('Y-m-d', $this->start), date('Y-m-d H:i:s'))->order("score DESC")->limit(40)->take();
+        $this->posts = Post::where("status <> 'deleted' AND posts.index_timestamp >= ? AND posts.index_timestamp <= ? ", date('Y-m-d', $this->start), date('Y-m-d H:i:s'))->order("score DESC")->limit(20)->take();
 
         $this->respond_to_list("posts");
     }
@@ -601,7 +730,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring '.date('Y', $this->day).'/'.date('m', $this->day).'/'.date('d', $this->day));
 
-        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->day), date('Y-m-d', strtotime('+1 day', $this->day)))->order("score DESC")->limit(40)->take();
+        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->day), date('Y-m-d', strtotime('+1 day', $this->day)))->order("score DESC")->limit(20)->take();
 
         $this->respond_to_list("posts");
     }
@@ -617,7 +746,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring '.date('Y', $this->start).'/'.date('m', $this->start).'/'.date('d', $this->start) . ' - '.date('Y', $this->end).'/'.date('m', $this->end).'/'.date('d', $this->end));
 
-        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(40)->take();
+        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(20)->take();
 
         $this->respond_to_list("posts");
     }
@@ -632,7 +761,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring '.date('Y', $this->start).'/'.date('m', $this->start));
 
-        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(40)->take();
+        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(20)->take();
 
         $this->respond_to_list("posts");
     }
