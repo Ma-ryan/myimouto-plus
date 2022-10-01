@@ -690,7 +690,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring ' . $this->period_name);
 
-        $this->posts = Post::where("status <> 'deleted' AND posts.index_timestamp >= ? AND posts.index_timestamp <= ? ", date('Y-m-d', $this->start), date('Y-m-d H:i:s'))->order("score DESC")->limit(20)->take();
+        $this->posts = Post::where("status <> 'deleted' AND posts.index_timestamp >= ? AND posts.index_timestamp <= ? ", date('Y-m-d', $this->start), date('Y-m-d H:i:s'))->order("score DESC")->limit(40)->take();
 
         $this->respond_to_list("posts");
     }
@@ -704,7 +704,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring '.date('Y', $this->day).'/'.date('m', $this->day).'/'.date('d', $this->day));
 
-        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->day), date('Y-m-d', strtotime('+1 day', $this->day)))->order("score DESC")->limit(20)->take();
+        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->day), date('Y-m-d', strtotime('+1 day', $this->day)))->order("score DESC")->limit(40)->take();
 
         $this->respond_to_list("posts");
     }
@@ -720,7 +720,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring '.date('Y', $this->start).'/'.date('m', $this->start).'/'.date('d', $this->start) . ' - '.date('Y', $this->end).'/'.date('m', $this->end).'/'.date('d', $this->end));
 
-        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(20)->take();
+        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(40)->take();
 
         $this->respond_to_list("posts");
     }
@@ -735,7 +735,7 @@ class PostController extends ApplicationController
 
         $this->set_title('Exploring '.date('Y', $this->start).'/'.date('m', $this->start));
 
-        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(20)->take();
+        $this->posts = Post::available()->where('created_at BETWEEN ? AND ?', date('Y-m-d', $this->start), date('Y-m-d', $this->end))->order('score DESC')->limit(40)->take();
 
         $this->respond_to_list("posts");
     }
