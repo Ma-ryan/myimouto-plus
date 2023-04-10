@@ -231,6 +231,10 @@ abstract class DefaultConfig
     # Members cannot post more than X comments in an hour.
     public $member_comment_limit = 20;
 
+    // Ammount of time a new user account must wait before they can comment in days.
+    // This only applies to regular members, privileged users bypass this.
+    public $new_member_comment_period = 7;
+
     # (Next 2 arrays will be filled when including config/languages.php)
     public $language_names = [];
 

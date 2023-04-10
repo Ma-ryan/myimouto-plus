@@ -45,13 +45,22 @@ class CommentController extends ApplicationController
 
     public function create()
     {
-         if (current_user()->is_member_or_lower() && $this->params()->commit == "Post" && Comment::where("user_id = ? AND created_at > SUBDATE(NOW(), INTERVAL 1 HOUR)", current_user()->id)->count() >= CONFIG()->member_comment_limit) {
-            # TODO: move this to the model
-            $this->respond_to_error("Hourly limit exceeded", '#index', array('status' => 421));
-            return;
+        $user = current_user();
+
+         if ($user->is_member_or_lower() && $this->params()->commit == "Post") {
+                if (Comment::where("user_id = ? AND created_at > SUBDATE(NOW(), INTERVAL 1 HOUR)", current_user()->id)->count() >= CONFIG()->member_comment_limit)
+                {
+                    $this->respond_to_error("Hourly limit exceeded", '#index', array('status' => 421));
+                    return;
+                }
+                else if (time() - strtotime($user->created_at) < CONFIG()->new_member_comment_period * 86400)
+                {
+                    $this->respond_to_error('New users must wait ' . CONFIG()->new_member_comment_period . ' days before commenting.', '#index');
+                    return;
+                }
         }
 
-        $user_id = current_user()->id;
+        $user_id = $user->id;
         
         $comment = new Comment(array_merge($this->params()->comment, array('ip_addr' => $this->request()->remoteIp(), 'user_id' => $user_id)));
         if ($this->params()->commit == "Post without bumping") {
