@@ -115,38 +115,36 @@ class CommentController extends ApplicationController
 
     public function search()
     {
-        $query        = Comment::order('id desc');
-        $search_query = explode(' ', $this->params()->query);
-        $search_terms = array();
-        
-        foreach ($search_query as $s) {
-            if (!$s) {
-                continue;
-            }
-            
-            if (strpos($s, 'user:') === 0 && strlen($s) > 5) {
-                list($search_type, $param) = explode(':', $s);
-                
-                if ($user = User::where(['name' => $param])->first()) {
-                    $query->where('user_id = ?', $user->id);
-                } else {
-                    $query->where('false');
-                }
-                continue;
-            }
+        $query = Comment::order('id desc');        
+        $params = $this->params()->query;
+        preg_match_all('/\buser:([^\s]+)/u', $params, $matches, PREG_OFFSET_CAPTURE);
 
-            $search_terms[] = $s;
+        $where = '1=1';
+        $wparams = [];
+
+        if (isset($matches[1]))
+        {
+            $offset = $matches[0][0][1];
+            $length = strlen($matches[0][0][0]);
+            $params = substr($params, 0, $offset) . substr($params, $offset + $length);
+            $query->joins('JOIN `users` ON `users`.`id` = `comments`.`user_id`');
+            $where .= ' AND `users`.`name` = ?';
+            $wparams[] = $matches[1][0][0];
         }
-        
-        if ($search_terms) {
-            $query->where('body LIKE ?', '%' . implode('%', $search_terms) . '%');
-        } else {
-            # MI: this query makes no sense, it will return nothing.
-            $query->where('false');
+
+        // TODO: comment search using LIKE will be very slow...
+        // we really need a full text index on `body` column to handle this correctly
+        $params = trim($params);
+        if ($params !== '')
+        {
+            $where .= ' AND `body` LIKE ?';
+            $params = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $params);
+            $wparams[] = '%' . $params . '%';
         }
+
+        $query->where($where, ...$wparams);
 
         $this->comments = $query->paginate($this->page_number(), 30);
-
         $this->respond_to_list("comments");
     }
 
