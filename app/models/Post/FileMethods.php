@@ -13,6 +13,7 @@ trait PostFileMethods
         'image/jpeg' => 'jpg',
         'image/jpg'  => 'jpg',
         'image/png'  => 'png',
+        'image/webp'  => 'webp',
         'image/gif'  => 'gif',
         'application/x-shockwave-flash' => 'swf',
         'video/webm' => 'webm',
@@ -444,7 +445,7 @@ trait PostFileMethods
     # Returns true if the post is an image format that GD can handle.
     public function image()
     {
-        return in_array($this->file_ext, array('jpg', 'jpeg', 'gif', 'png'));
+        return in_array($this->file_ext, array('jpg', 'jpeg', 'gif', 'png', 'webp'));
     }
     # Returns true if the post is a Flash movie.
     public function flash()
