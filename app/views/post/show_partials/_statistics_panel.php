@@ -19,7 +19,7 @@
       ?>
         <li><?= $this->t('.source') ?>: <?= $this->linkTo(substr($this->post->source, $init, 20) . "...", $this->post->normalized_source(), array('rel' => 'nofollow', 'target' => '_blank')) ?></li>
       <?php else: ?>
-        <li><?= $this->t('.source') ?>: <?= $this->post->source ?></li>
+        <li><?= $this->t('.source') ?>: <?= $this->h($this->post->source) ?></li>
       <?php endif ?>
     <?php endif ?>
     <li><?= $this->t('.rating') ?>: <?= $this->post->pretty_rating() ?> <?= $this->vote_tooltip_widget() ?></li>
